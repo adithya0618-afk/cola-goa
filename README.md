@@ -396,3 +396,13 @@ mkdir ~/db-backups
 Then:
 
 pg_dump "..." | gzip > ~/db-backups/backup_$(date +%F).sql.gz
+
+
+.env.local
+# Used by Drizzle to run migrations
+DATABASE_URL="postgresql://postgres.[YOUR_PROJECT_REF]:[YOUR_PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres"
+
+# Used if you use the Supabase JS Client in your Next.js frontend
+NEXT_PUBLIC_SUPABASE_URL="https://[YOUR_PROJECT_REF].supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5c..."
+

@@ -1,250 +1,219 @@
+
 import {
     pgTable,
     uuid,
-    serial,
-    varchar,
+    text,
+    timestamp,
+    numeric,
     integer,
     boolean,
-    text,
-    jsonb,
-    timestamp,
     pgEnum,
-    primaryKey,
-    index
+    serial,
+    date
 } from "drizzle-orm/pg-core";
 
-//
-// 🔥 ENUMS
-//
 
-export const userStatusEnum = pgEnum("user_status", [
-    "active",
-    "blocked",
+// =======================
+// ENUMS
+// =======================
+
+export const roomStatusEnum = pgEnum("room_status", [
+    "available",
+    "occupied",
+    "maintenance"
 ]);
 
-export const kycStatusEnum = pgEnum("kyc_status", [
+export const bookingStatusEnum = pgEnum("booking_status", [
+    "booked",
+    "checked_in",
+    "checked_out",
+    "cancelled"
+]);
+
+export const paymentStatusEnum = pgEnum("payment_status", [
     "pending",
-    "verified",
+    "partial",
+    "paid"
+]);
+
+export const orderStatusEnum = pgEnum("order_status", [
+    "pending",
+    "accepted",
     "rejected",
+    "completed"
 ]);
 
-export const transactionTypeEnum = pgEnum("transaction_type", [
-    "deposit",
-    "withdrawal",
-    "ticket_purchase",
-    "prize",
+export const itemTypeEnum = pgEnum("item_type", [
+    "food",
+    "service"
 ]);
 
-export const transactionStatusEnum = pgEnum("transaction_status", [
+export const paymentMethodEnum = pgEnum("payment_method", [
+    "cash",
+    "card",
+    "upi"
+]);
+
+export const paymentTxnStatusEnum = pgEnum("payment_txn_status", [
     "pending",
     "success",
-    "failed",
+    "failed"
 ]);
 
-export const gameTypeEnum = pgEnum("game_type_enum", [
-    "lottery",
-    "level",
-]);
 
-//
-// 👤 USERS
-//
+// =======================
+// USERS
+// =======================
 
 export const users = pgTable("users", {
-    id: uuid("id").primaryKey().defaultRandom(),
-    name: varchar("name", { length: 100 }).notNull(),
-    email: varchar("email", { length: 150 }).notNull().unique(),
-    phone: varchar("phone", { length: 20 }),
-    passwordHash: text("password_hash").notNull(),
+    id: uuid("id").defaultRandom().primaryKey(),
 
-    status: userStatusEnum("status").default("active"),
-    kycStatus: kycStatusEnum("kyc_status").default("pending"),
+    name: text("name").notNull(),
+    phone: text("phone").unique(),
+    email: text("email").unique(),
 
     createdAt: timestamp("created_at").defaultNow(),
 });
 
-//
-// 💰 WALLET
-//
 
-export const wallets = pgTable("wallets", {
-    id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
-        .references(() => users.id, { onDelete: "cascade" })
-        .notNull(),
+// =======================
+// ROOMS
+// =======================
 
-    balance: integer("balance").notNull().default(0),
-
-    createdAt: timestamp("created_at").defaultNow(),
-});
-
-//
-// 💳 TRANSACTIONS
-//
-
-export const transactions = pgTable("transactions", {
-    id: uuid("id").primaryKey().defaultRandom(),
-
-    userId: uuid("user_id")
-        .references(() => users.id)
-        .notNull(),
-
-    walletId: uuid("wallet_id")
-        .references(() => wallets.id)
-        .notNull(),
-
-    amount: integer("amount").notNull(),
-
-    type: transactionTypeEnum("type").notNull(),
-    status: transactionStatusEnum("status").default("pending"),
-
-    createdAt: timestamp("created_at").defaultNow(),
-});
-
-//
-// 💸 PAYMENT ORDERS
-//
-
-export const paymentOrders = pgTable("payment_orders", {
-    id: uuid("id").primaryKey().defaultRandom(),
-
-    userId: uuid("user_id")
-        .references(() => users.id)
-        .notNull(),
-
-    amount: integer("amount").notNull(),
-
-    razorpayOrderId: varchar("razorpay_order_id", { length: 100 })
-        .notNull()
-        .unique(),
-
-    status: transactionStatusEnum("status").default("pending"),
-
-    createdAt: timestamp("created_at").defaultNow(),
-});
-
-//
-// 🎮 GAME TYPES
-//
-
-export const gameTypes = pgTable("game_types", {
+export const rooms = pgTable("rooms", {
     id: serial("id").primaryKey(),
 
-    name: varchar("name", { length: 100 }).notNull(),
-    type: gameTypeEnum("type").notNull(),
+    roomNumber: integer("room_number").notNull().unique(),
+    pricePerNight: numeric("price_per_night").notNull(),
+    capacity: integer("capacity"),
+
+    status: roomStatusEnum("status").default("available"),
 
     createdAt: timestamp("created_at").defaultNow(),
 });
 
-//
-// 🎯 LOTTERY DRAWS
-//
 
-export const draws = pgTable("draws", {
-    id: uuid("id").primaryKey().defaultRandom(),
+// =======================
+// BOOKINGS (CORE)
+// =======================
 
-    name: varchar("name", { length: 100 }).notNull(),
-    entryFee: integer("entry_fee").notNull(),
+export const bookings = pgTable("bookings", {
+    id: uuid("id").defaultRandom().primaryKey(),
 
-    drawTime: timestamp("draw_time"),
+    userId: uuid("user_id").references(() => users.id, {
+        onDelete: "cascade",
+    }),
 
-    createdAt: timestamp("created_at").defaultNow(),
-});
+    roomId: integer("room_id").references(() => rooms.id),
 
-//
-// 🎟️ TICKETS
-//
+    checkInDate: date("check_in_date").notNull(),
+    checkOutDate: date("check_out_date").notNull(),
 
-export const tickets = pgTable("tickets", {
-    id: uuid("id").primaryKey().defaultRandom(),
+    status: bookingStatusEnum("status").default("booked"),
+    paymentStatus: paymentStatusEnum("payment_status").default("pending"),
 
-    userId: uuid("user_id")
-        .references(() => users.id)
-        .notNull(),
+    guestToken: text("guest_token").unique(),
 
-    drawId: uuid("draw_id")
-        .references(() => draws.id)
-        .notNull(),
-
-    numbers: varchar("numbers", { length: 50 }),
+    // 💰 BILLING
+    roomAmount: numeric("room_amount").default("0"),
+    serviceAmount: numeric("service_amount").default("0"),
+    totalAmount: numeric("total_amount").default("0"),
 
     createdAt: timestamp("created_at").defaultNow(),
 });
 
-//
-// 🏆 LEVEL POOLS
-//
 
-export const levelPools = pgTable("level_pools", {
-    id: uuid("id").primaryKey().defaultRandom(),
+// =======================
+// ITEMS (FOOD + SERVICE)
+// =======================
 
-    gameTypeId: integer("game_type_id")
-        .references(() => gameTypes.id)
-        .notNull(),
+export const items = pgTable("items", {
+    id: serial("id").primaryKey(),
 
-    entryFee: integer("entry_fee").notNull(),
-    maxUsers: integer("max_users").notNull(),
+    name: text("name").notNull(),
+    type: itemTypeEnum("type"),
+    category: text("category"),
 
-    currentUsers: integer("current_users").default(0),
-
-    createdAt: timestamp("created_at").defaultNow(),
-});
-
-//
-// 👥 POOL USERS
-//
-
-export const poolUsers = pgTable(
-    "pool_users",
-    {
-        poolId: uuid("pool_id")
-            .references(() => levelPools.id)
-            .notNull(),
-
-        userId: uuid("user_id")
-            .references(() => users.id)
-            .notNull(),
-
-        joinedAt: timestamp("joined_at").defaultNow(),
-    },
-    (t) => ({
-        pk: primaryKey({ columns: [t.poolId, t.userId] }),
-    })
-);
-
-//
-// 🏦 USER BANK ACCOUNTS
-//
-
-export const userBankAccounts = pgTable("user_bank_accounts", {
-    id: uuid("id").primaryKey().defaultRandom(),
-
-    userId: uuid("user_id")
-        .references(() => users.id)
-        .notNull(),
-
-    accountHolderName: varchar("account_holder_name", { length: 100 }),
-    accountNumber: varchar("account_number", { length: 30 }),
-    ifscCode: varchar("ifsc_code", { length: 20 }),
-    bankName: varchar("bank_name", { length: 100 }),
+    price: numeric("price").notNull(),
+    isAvailable: boolean("is_available").default(true),
 
     createdAt: timestamp("created_at").defaultNow(),
 });
 
-//
-// 💵 WITHDRAWALS
-//
 
-export const withdrawals = pgTable("withdrawals", {
-    id: uuid("id").primaryKey().defaultRandom(),
+// =======================
+// ORDERS
+// =======================
 
-    userId: uuid("user_id")
-        .references(() => users.id)
-        .notNull(),
+export const orders = pgTable("orders", {
+    id: uuid("id").defaultRandom().primaryKey(),
 
-    amount: integer("amount").notNull(),
+    bookingId: uuid("booking_id").references(() => bookings.id, {
+        onDelete: "cascade",
+    }),
 
-    status: transactionStatusEnum("status").default("pending"),
+    roomId: integer("room_id").references(() => rooms.id),
+
+    status: orderStatusEnum("status").default("pending"),
+
+    totalAmount: numeric("total_amount").default("0"),
+
+    createdAt: timestamp("created_at").defaultNow(),
+});
+
+
+// =======================
+// ORDER ITEMS
+// =======================
+
+export const orderItems = pgTable("order_items", {
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    orderId: uuid("order_id").references(() => orders.id, {
+        onDelete: "cascade",
+    }),
+
+    itemId: integer("item_id").references(() => items.id),
+
+    quantity: integer("quantity").default(1),
+    price: numeric("price").notNull(),
+
+    createdAt: timestamp("created_at").defaultNow(),
+});
+
+
+// =======================
+// PAYMENTS
+// =======================
+
+export const payments = pgTable("payments", {
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    bookingId: uuid("booking_id").references(() => bookings.id, {
+        onDelete: "cascade",
+    }),
+
+    amount: numeric("amount").notNull(),
+
+    paymentMethod: paymentMethodEnum("payment_method"),
+    status: paymentTxnStatusEnum("status").default("pending"),
+
+    transactionRef: text("transaction_ref"),
+
+    createdAt: timestamp("created_at").defaultNow(),
+});
+
+
+// =======================
+// STAFF (OPTIONAL)
+// =======================
+
+export const staff = pgTable("staff", {
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    name: text("name"),
+    role: text("role"),
+    shift: text("shift"),
 
     createdAt: timestamp("created_at").defaultNow(),
 });
