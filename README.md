@@ -403,6 +403,9 @@ pg_dump "..." | gzip > ~/db-backups/backup_$(date +%F).sql.gz
 DATABASE_URL="postgresql://postgres.[YOUR_PROJECT_REF]:[YOUR_PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres"
 
 # Used if you use the Supabase JS Client in your Next.js frontend
-NEXT_PUBLIC_SUPABASE_URL="https://[YOUR_PROJECT_REF].supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5c..."
+NEXT_PUBLIC_SUPABASE_URL="https://jlkpuyuxsdaaatbcgvap.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsa3B1eXV4c2RhYWF0YmNndmFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzEwMDgsImV4cCI6MjA5MTQwNzAwOH0.Da0phfL1kcgnWysO5OP0Etlo8MpNht1nHFAEei5VbHg"
 
+DB credentials : 
+balajimarpally931@gmail.com
+password : Colagoa@123
