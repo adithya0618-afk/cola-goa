@@ -1,440 +1,501 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌴 Cola Goa Resort — Full Stack CRM System
 
-## Getting Started
+> **Branch:** `balaji-admin` | **Stack:** Next.js 16 · TypeScript · Drizzle ORM · PostgreSQL (Supabase) · Tailwind CSS v4 · JWT Auth
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📋 Table of Contents
+
+1. [What Was Built](#-what-was-built)
+2. [Project Structure](#-project-structure)
+3. [All Pages & Routes](#-all-pages--routes)
+4. [JWT Authentication — How It Works](#-jwt-authentication--how-it-works)
+5. [Database Schema](#-database-schema)
+6. [Environment Variables](#-environment-variables)
+7. [Complete Setup — All Commands at Once](#-complete-setup--all-commands-at-once)
+8. [NPM Packages — What & Why](#-npm-packages--what--why)
+9. [Git Workflow](#-git-workflow)
+10. [Database Backup](#-database-backup)
+
+---
+
+## 🏗 What Was Built
+
+This branch (`balaji-admin`) contains the complete **Reception CRM Dashboard** for Cola Goa Resort.
+
+### Two Applications in One Codebase
+
+| App | URL Path | Description |
+|---|---|---|
+| 🔐 **Admin CRM** | `/admin/*` | Reception/Staff dashboard — **JWT protected** |
+| 🌴 **Guest Website** | `/` | Public guest site — scaffolded for friend's team |
+
+### Admin CRM Features Built
+
+| Page | URL | Feature |
+|---|---|---|
+| Login | `/admin/login` | Secure login with bcrypt + JWT cookie |
+| Dashboard | `/admin/dashboard` | Stats overview, occupancy gauge, recent bookings |
+| Rooms | `/admin/rooms` | **BookMyShow-style grid** of 13 rooms — green=bookable, red=blocked |
+| Bookings | `/admin/bookings` | Full booking table, Check-In, Checkout, Cancel, Invoice |
+| Orders | `/admin/orders` | Live food/service orders, Accept/Reject/Complete |
+| Menu/Items | `/admin/items` | Add/Edit/Delete food items and services |
+| Staff | `/admin/staff` | Manage staff members, roles, shifts |
+| Payments | `/admin/payments` | Track all transactions |
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── app/
+│   ├── (admin)/              ← Route group (no URL effect)
+│   │   ├── layout.tsx        ← Admin layout: Sidebar + Topbar (wraps all /admin/* pages)
+│   │   └── admin/            ← Adds /admin/ prefix to all URLs
+│   │       ├── dashboard/page.tsx
+│   │       ├── rooms/page.tsx
+│   │       ├── bookings/page.tsx + BookingsClient.tsx
+│   │       ├── orders/page.tsx + OrdersClient.tsx
+│   │       ├── items/page.tsx + ItemsClient.tsx
+│   │       ├── staff/page.tsx + StaffClient.tsx
+│   │       └── payments/page.tsx + PaymentsClient.tsx
+│   │
+│   ├── admin/
+│   │   └── login/            ← Standalone login (no sidebar, dark design)
+│   │       ├── layout.tsx
+│   │       └── page.tsx
+│   │
+│   ├── (guest)/              ← Guest website (friend's team)
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   │
+│   ├── api/admin/            ← All backend API routes
+│   │   ├── login/route.ts
+│   │   ├── logout/route.ts
+│   │   ├── bookings/route.ts + [id]/route.ts + [id]/checkout/route.ts
+│   │   ├── orders/route.ts + [id]/route.ts
+│   │   ├── items/route.ts + [id]/route.ts
+│   │   └── staff/route.ts + [id]/route.ts
+│   │
+│   ├── globals.css           ← Design system (tokens, buttons, badges, cards, tables)
+│   ├── layout.tsx            ← Root layout
+│   └── page.tsx              ← Redirects / → /admin/dashboard
+│
+├── components/
+│   └── admin/
+│       ├── AdminSidebar.tsx  ← Dark navy sidebar with nav + logout
+│       ├── AdminTopbar.tsx   ← Search + notifications + user avatar
+│       ├── RoomGrid.tsx      ← BookMyShow room selector
+│       └── BookingModal.tsx  ← 3-step booking flow modal
+│
+├── db/
+│   ├── migrations/schema.ts  ← Drizzle ORM schema (all tables)
+│   └── seed.ts               ← Seeds 13 rooms + default admin user
+│
+├── lib/
+│   └── db.ts                 ← Drizzle DB connection singleton
+│
+└── proxy.ts                  ← JWT route protection (Next.js 16 "proxy" = old middleware)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Pattern Used: Server + Client Component Split
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Each admin page uses a **Server Component** for data fetching + a **Client Component** for interactivity:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+bookings/
+├── page.tsx          ← Server: fetches from DB, passes data as props
+└── BookingsClient.tsx ← Client: search, filter, modals, actions ('use client')
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🗺 All Pages & Routes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Frontend Pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Route | Component | Data Source | Auth Required |
+|---|---|---|---|
+| `GET /` | `app/page.tsx` | — | No (redirects) |
+| `GET /admin/login` | `admin/login/page.tsx` | — | No |
+| `GET /admin/dashboard` | `admin/dashboard/page.tsx` | DB (server-side) | ✅ Yes |
+| `GET /admin/rooms` | `admin/rooms/page.tsx` | DB (server-side) | ✅ Yes |
+| `GET /admin/bookings` | `admin/bookings/page.tsx` | DB (server-side) | ✅ Yes |
+| `GET /admin/orders` | `admin/orders/page.tsx` | DB (server-side) | ✅ Yes |
+| `GET /admin/items` | `admin/items/page.tsx` | DB (server-side) | ✅ Yes |
+| `GET /admin/staff` | `admin/staff/page.tsx` | DB (server-side) | ✅ Yes |
+| `GET /admin/payments` | `admin/payments/page.tsx` | DB (server-side) | ✅ Yes |
 
-## Deploy on Vercel
+### Backend API Routes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Method | Route | What It Does |
+|---|---|---|
+| `POST` | `/api/admin/login` | Validates credentials, issues JWT cookie |
+| `POST` | `/api/admin/logout` | Clears JWT cookie |
+| `GET` | `/api/admin/bookings` | List all bookings |
+| `POST` | `/api/admin/bookings` | Create a new booking (prevents double-booking) |
+| `PATCH` | `/api/admin/bookings/[id]` | Update booking status |
+| `POST` | `/api/admin/bookings/[id]/checkout` | Generate checkout invoice |
+| `GET` | `/api/admin/orders` | List all orders |
+| `PATCH` | `/api/admin/orders/[id]` | Accept/Reject/Complete an order |
+| `GET` | `/api/admin/items` | List all menu items |
+| `POST` | `/api/admin/items` | Create a new item |
+| `PUT` | `/api/admin/items/[id]` | Update an item |
+| `DELETE` | `/api/admin/items/[id]` | Delete an item |
+| `GET` | `/api/admin/staff` | List all staff |
+| `POST` | `/api/admin/staff` | Add new staff member |
+| `PUT` | `/api/admin/staff/[id]` | Update staff member |
+| `DELETE` | `/api/admin/staff/[id]` | Delete staff member |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
 
+## 🔐 JWT Authentication — How It Works
 
-npm install drizzle-orm pg
-npm install drizzle-kit --save-dev
-npm install @types/pg --save-dev
-npm install jsonwebtoken bcryptjs
-npm install @types/jsonwebtoken @types/bcryptjs --save-dev
-npm install axios zod
-npm install dotenv
+### Overview
 
-Utils and Lib folders use : 
+```
+User visits /admin/dashboard
+      ↓
+src/proxy.ts intercepts the request
+      ↓
+Does cookie "admin_token" exist and have 3 JWT parts?
+      ↓ NO                    ↓ YES
+Redirect to /admin/login     Allow through to the page
+      ↓
+User submits email + password
+      ↓
+POST /api/admin/login
+      ↓
+bcrypt.compare(password, hashed_password_from_DB)
+      ↓ VALID
+jwt.sign({ id, email, role, name }, JWT_SECRET, { expiresIn: '12h' })
+      ↓
+Cookie set: admin_token=<JWT>; HttpOnly; Path=/; Max-Age=43200
+      ↓
+Browser redirects to /admin/dashboard ✅
+```
 
-FolderWhat Goes InExampleutils/Small, simple, pure functionsformatDate, formatCurrency, capitalizelib/Big, complex, third-party integrationsJWT setup, DB connection, Email client
+### JWT Token Details
 
-Simple Way to Think
-utils/  →  YOUR simple logic
-            just plain functions
-            no external packages needed
+| Property | Value |
+|---|---|
+| **Algorithm** | HS256 (HMAC SHA-256) |
+| **Validity** | **12 hours** (`expiresIn: '12h'`) |
+| **Cookie name** | `admin_token` |
+| **Cookie type** | HttpOnly (not accessible via JavaScript — prevents XSS) |
+| **Cookie age** | 43200 seconds = 12 hours |
+| **Stored in** | Browser cookie (NOT localStorage) |
+| **Secret key** | `JWT_SECRET` env variable |
 
-lib/    →  THIRD PARTY tool setup
-            needs installing packages
-            configuration required
+### What Happens After 12 Hours?
 
-Example
-utils/ — Simple functions ✅
-typescript// Just logic, no packages needed
-export const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('en-IN')
+- The cookie expires automatically in the browser
+- Next request to any `/admin/*` page → proxy detects no cookie → redirect to `/admin/login`
+- User must log in again
+
+### To Extend JWT Validity
+
+Open `src/app/api/admin/login/route.ts` and change:
+
+```typescript
+// Current: 12 hours
+jwt.sign(payload, JWT_SECRET, { expiresIn: '12h' })
+
+// For 24 hours:
+jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' })
+// Cookie Max-Age must also match: 86400 (24h in seconds)
+
+// For 7 days (not recommended for reception terminal):
+jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
+// Cookie Max-Age: 604800
+```
+
+### JWT Payload (What's Inside the Token)
+
+```json
+{
+  "id": "uuid-of-staff-member",
+  "email": "admin@colagoa.com",
+  "role": "admin",
+  "name": "Admin User",
+  "iat": 1713000000,
+  "exp": 1713043200
 }
+```
+
+### How to Inspect a JWT Token (for debugging)
 
-export const formatCurrency = (amount: number) => {
-  return `₹${amount.toLocaleString()}`
-}
-
-export const capitalize = (str: string) => {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
-lib/ — Complex setup ✅
-typescript// Needs jsonwebtoken package + config
-import jwt from 'jsonwebtoken'
-export const signToken = (payload: object) =>
-  jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '7d' })
-
-// Needs pg + drizzle packages + DB URL
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { Pool } from 'pg'
-export const db = drizzle(new Pool({ connectionString: process.env.DATABASE_URL! }))
-
-
---------------------React Components ------------------------------
-All Component Folders — Purpose
-components/
-│
-├── ui/           → Tiny reusable pieces
-│   ├── Button.tsx
-│   ├── Badge.tsx
-│   ├── Input.tsx
-│   └── Modal.tsx
-│
-├── layout/       → Page structure
-│   ├── Sidebar.tsx
-│   ├── Navbar.tsx
-│   └── Header.tsx
-│
-├── forms/        → Input forms
-│   ├── BookingForm.tsx
-│   ├── LoginForm.tsx
-│   └── RoomForm.tsx
-│
-└── tables/       → Data tables
-    ├── BookingsTable.tsx
-    ├── RoomsTable.tsx
-    └── StaffTable.tsx
-
-Simple Rule 🎯
-
-If a table is used in more than one place → put it in components/tables/
-If a form is used in more than one place → put it in components/forms/
-If a button/badge is used everywhere → put it in components/ui/
-
-It's all about reusing code instead of copy pasting! 🚀
-
---------------------------Config------------------------------
-
-config/ stores fixed values and settings that are used across the whole app.
-
-Instead of typing the same value in 10 places — define it ONCE in config and import it everywhere!
-
-// config/constants.ts → define ONCE
-export const ROLES = {
-  ADMIN  : "ADMIN",
-  MANAGER: "MANAGER",
-  STAFF  : "STAFF",
-}
-
-// bookings/route.ts
-import { ROLES } from '@/config/constants'
-if (user.role === ROLES.ADMIN) { ... }    ✅
-
-// staff/route.ts
-if (user.role === ROLES.ADMIN) { ... }    ✅
-
-// rooms/route.ts
-if (user.role === ROLES.ADMIN) { ... }    ✅
-
----------------------------Hooks-----------------
-## `hooks/` in 10 Lines 🪝
-
-1. **Hooks** are reusable functions that handle **logic & state** for frontend pages
-2. They always start with `use` → `useAuth`, `useBookings`, `useRooms`
-3. They live in `hooks/` folder so all pages can **import and reuse** them
-4. Without hooks → you copy paste `useState + useEffect` in every page 😵
-5. With hooks → write logic **once**, import in any page with 1 line ✅
-6. `useAuth.ts` → checks if user is logged in, returns user info
-7. `useBookings.ts` → fetches bookings from API, returns data + loading + error
-8. `useRooms.ts` → fetches rooms, tells you which are available or occupied
-9. They only work in **frontend** (`page.tsx`) — NOT in backend (`route.ts`)
-10. **Rule** → same `useState + useEffect` in 2+ pages? → move it to a hook! 🚀
-
-import {
-  pgTable,
-  uuid,
-  text,
-  timestamp,
-  numeric,
-  integer,
-  boolean,
-  pgEnum,
-  serial,
-  date
-} from "drizzle-orm/pg-core";
-
-
-// =======================
-// ENUMS
-// =======================
-
-export const roomStatusEnum = pgEnum("room_status", [
-  "available",
-  "occupied",
-  "maintenance"
-]);
-
-export const bookingStatusEnum = pgEnum("booking_status", [
-  "booked",
-  "checked_in",
-  "checked_out",
-  "cancelled"
-]);
-
-export const paymentStatusEnum = pgEnum("payment_status", [
-  "pending",
-  "partial",
-  "paid"
-]);
-
-export const orderStatusEnum = pgEnum("order_status", [
-  "pending",
-  "accepted",
-  "rejected",
-  "completed"
-]);
-
-export const itemTypeEnum = pgEnum("item_type", [
-  "food",
-  "service"
-]);
-
-export const paymentMethodEnum = pgEnum("payment_method", [
-  "cash",
-  "card",
-  "upi"
-]);
-
-export const paymentTxnStatusEnum = pgEnum("payment_txn_status", [
-  "pending",
-  "success",
-  "failed"
-]);
-
-
-// =======================
-// USERS
-// =======================
-
-export const users = pgTable("users", {
-  id: uuid("id").defaultRandom().primaryKey(),
-
-  name: text("name").notNull(),
-  phone: text("phone").unique(),
-  email: text("email").unique(),
-
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-
-// =======================
-// ROOMS
-// =======================
-
-export const rooms = pgTable("rooms", {
-  id: serial("id").primaryKey(),
-
-  roomNumber: integer("room_number").notNull().unique(),
-  pricePerNight: numeric("price_per_night").notNull(),
-  capacity: integer("capacity"),
-
-  status: roomStatusEnum("status").default("available"),
-
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-
-// =======================
-// BOOKINGS (CORE)
-// =======================
-
-export const bookings = pgTable("bookings", {
-  id: uuid("id").defaultRandom().primaryKey(),
-
-  userId: uuid("user_id").references(() => users.id, {
-    onDelete: "cascade",
-  }),
-
-  roomId: integer("room_id").references(() => rooms.id),
-
-  checkInDate: date("check_in_date").notNull(),
-  checkOutDate: date("check_out_date").notNull(),
-
-  status: bookingStatusEnum("status").default("booked"),
-  paymentStatus: paymentStatusEnum("payment_status").default("pending"),
-
-  guestToken: text("guest_token").unique(),
-
-  // 💰 BILLING
-  roomAmount: numeric("room_amount").default("0"),
-  serviceAmount: numeric("service_amount").default("0"),
-  totalAmount: numeric("total_amount").default("0"),
-
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-
-// =======================
-// ITEMS (FOOD + SERVICE)
-// =======================
-
-export const items = pgTable("items", {
-  id: serial("id").primaryKey(),
-
-  name: text("name").notNull(),
-  type: itemTypeEnum("type"),
-  category: text("category"),
-
-  price: numeric("price").notNull(),
-  isAvailable: boolean("is_available").default(true),
-
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-
-// =======================
-// ORDERS
-// =======================
-
-export const orders = pgTable("orders", {
-  id: uuid("id").defaultRandom().primaryKey(),
-
-  bookingId: uuid("booking_id").references(() => bookings.id, {
-    onDelete: "cascade",
-  }),
-
-  roomId: integer("room_id").references(() => rooms.id),
-
-  status: orderStatusEnum("status").default("pending"),
-
-  totalAmount: numeric("total_amount").default("0"),
-
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-
-// =======================
-// ORDER ITEMS
-// =======================
-
-export const orderItems = pgTable("order_items", {
-  id: uuid("id").defaultRandom().primaryKey(),
-
-  orderId: uuid("order_id").references(() => orders.id, {
-    onDelete: "cascade",
-  }),
-
-  itemId: integer("item_id").references(() => items.id),
-
-  quantity: integer("quantity").default(1),
-  price: numeric("price").notNull(),
-
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-
-// =======================
-// PAYMENTS
-// =======================
-
-export const payments = pgTable("payments", {
-  id: uuid("id").defaultRandom().primaryKey(),
-
-  bookingId: uuid("booking_id").references(() => bookings.id, {
-    onDelete: "cascade",
-  }),
-
-  amount: numeric("amount").notNull(),
-
-  paymentMethod: paymentMethodEnum("payment_method"),
-  status: paymentTxnStatusEnum("status").default("pending"),
-
-  transactionRef: text("transaction_ref"),
-
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-
-// =======================
-// STAFF (OPTIONAL)
-// =======================
-
-export const staff = pgTable("staff", {
-  id: uuid("id").defaultRandom().primaryKey(),
-
-  name: text("name"),
-  role: text("role"),
-  shift: text("shift"),
-
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-drizzle commands 
-npm install drizzle-orm pg
-npm install -D drizzle-kit
-npm install dotenv
-
-# create schema.ts
-# create drizzle.config.ts
-
-npx drizzle-kit generate
-npx drizzle-kit migrate
-npx drizzle-kit push
-npx drizzle-kit studio
-
-npm install @supabase/supabase-js
-
-backups of database 
-
-
-Create a backups folder:
-
+1. Open browser → F12 → Application → Cookies → `admin_token`
+2. Copy the token value
+3. Paste at [https://jwt.io](https://jwt.io) — you'll see the payload decoded
+
+---
+
+## 🗄 Database Schema
+
+### Tables
+
+| Table | Purpose | Key Fields |
+|---|---|---|
+| `users` | Resort guests | id, name, phone, email |
+| `rooms` | 13 resort rooms | id, roomNumber, pricePerNight, status |
+| `bookings` | All reservations | id, userId, roomId, checkIn/Out, status, paymentStatus, guestToken |
+| `orders` | Food/service requests | id, bookingId, roomId, status, totalAmount |
+| `order_items` | Line items per order | orderId, itemId, quantity, price |
+| `items` | Menu + services catalog | id, name, type, category, price, isAvailable |
+| `payments` | Payment transactions | id, bookingId, amount, method, status |
+| `staff` | Resort employees | id, name, email, role, shift, password (hashed) |
+
+### Room Status Flow
+
+```
+available → (booking created) → occupied → (checkout) → available
+available → (marked manually) → maintenance → (fixed) → available
+```
+
+### Booking Status Flow
+
+```
+booked → (receptionist clicks Check-In) → checked_in → (checkout) → checked_out
+booked → (receptionist cancels) → cancelled
+```
+
+### Order Cost Propagation
+
+```
+Guest orders food (₹500)
+  → Order created: status=pending
+  → Receptionist accepts → status=accepted
+  → booking.serviceAmount += ₹500
+  → booking.totalAmount = roomAmount + serviceAmount
+  → Checkout: invoice shows full breakdown
+```
+
+---
+
+## 🔑 Environment Variables
+
+File: `.env.local`
+
+```env
+# ============================================
+# DATABASE — Supabase PostgreSQL
+# ============================================
+DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres"
+
+# ============================================
+# SUPABASE (for Supabase JS client if needed)
+# ============================================
+NEXT_PUBLIC_SUPABASE_URL="https://jlkpuyuxsdaaatbcgvap.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+# ============================================
+# JWT — Admin Authentication
+# ============================================
+# This is the secret used to SIGN and VERIFY JWT tokens
+# CHANGE THIS in production to a long random string!
+# Token validity is controlled in: src/app/api/admin/login/route.ts
+JWT_SECRET="cola_goa_jwt_super_secret_change_in_production_2025"
+
+# ============================================
+# APP URL — Used for generating guest links
+# ============================================
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+> **⚠️ Security Note:** Never commit `.env.local` to git. It is already in `.gitignore`.
+
+---
+
+## 🚀 Complete Setup — All Commands at Once
+
+### First Time Setup (run in order)
+
+```bash
+# ─────────────────────────────────────────────
+# 1. CLONE & SETUP BRANCH
+# ─────────────────────────────────────────────
+git clone "https://github.com/adithya0618-afk/cola-goa.git"
+cd cola-goa
+git checkout balaji-admin
+
+# ─────────────────────────────────────────────
+# 2. INSTALL ALL DEPENDENCIES
+# ─────────────────────────────────────────────
+npm install
+
+# ─────────────────────────────────────────────
+# 3. SET UP ENVIRONMENT
+# ─────────────────────────────────────────────
+# Edit .env.local and fill in your DATABASE_URL
+# It already has JWT_SECRET and other values
+
+# ─────────────────────────────────────────────
+# 4. DATABASE MIGRATION (creates all tables)
+# ─────────────────────────────────────────────
+npm run db:migrate
+# This runs: drizzle-kit migrate
+# Creates: users, rooms, bookings, orders, order_items, items, payments, staff tables
+
+# ─────────────────────────────────────────────
+# 5. SEED DATABASE (13 rooms + admin user)
+# ─────────────────────────────────────────────
+npm run db:seed
+# This creates:
+#   - 13 rooms (101–303) with pricing
+#   - Admin user: admin@colagoa.com / admin123
+
+# ─────────────────────────────────────────────
+# 6. START DEVELOPMENT SERVER
+# ─────────────────────────────────────────────
+npm run dev
+# Open: http://localhost:3000/admin/login
+# Login: admin@colagoa.com / admin123
+```
+
+### Daily Development Commands
+
+```bash
+npm run dev          # Start development server (hot reload)
+npm run build        # Build for production (also runs TypeScript check)
+npm run start        # Run production build locally
+
+npm run db:generate  # Generate new migration files from schema changes
+npm run db:migrate   # Apply pending migrations to database
+npm run db:seed      # Re-seed rooms and admin user (safe — uses onConflictDoNothing)
+```
+
+### Git Workflow (Team Commands)
+
+```bash
+# Get latest from dev branch
+git checkout dev
+git pull origin dev
+
+# Create your personal branch
+git checkout -b "your-name-feature"
+
+# Daily work
+git add .
+git commit -m "descriptive message of what you did"
+git push origin "your-name-feature"
+
+# To sync with latest dev changes
+git pull origin dev
+```
+
+---
+
+## 📦 NPM Packages — What & Why
+
+### Production Dependencies
+
+| Package | Version | Why We Need It |
+|---|---|---|
+| `next` | 16.2.2 | The React framework — routing, server components, API routes |
+| `react` & `react-dom` | 19.x | React library — building UI components |
+| `drizzle-orm` | ^0.45.2 | Type-safe SQL ORM — write SQL in TypeScript instead of raw queries |
+| `pg` | ^8.20.0 | PostgreSQL client — connects Node.js to your Supabase PostgreSQL |
+| `jsonwebtoken` | ^9.0.3 | Creates and verifies JWT tokens for authentication |
+| `bcryptjs` | ^3.0.3 | Hashes passwords securely — never store plain text passwords |
+| `lucide-react` | ^1.8.0 | Beautiful icon library — all the icons in sidebar, forms, buttons |
+| `zod` | ^4.3.6 | Schema validation — validate API request bodies safely |
+| `axios` | ^1.14.0 | HTTP client — for making API requests from frontend |
+| `dotenv` | ^17.4.1 | Loads `.env.local` variables into `process.env` |
+
+### Development Dependencies
+
+| Package | Version | Why We Need It |
+|---|---|---|
+| `drizzle-kit` | ^0.31.10 | CLI tool — generates migrations, runs migrations, opens DB studio |
+| `tsx` | ^4.x | TypeScript executor — runs `.ts` files directly (used for seed script) |
+| `typescript` | ^5 | TypeScript compiler |
+| `tailwindcss` | ^4 | Utility CSS framework |
+| `@tailwindcss/postcss` | ^4 | Processes Tailwind CSS through PostCSS |
+| `@types/node` | ^20 | TypeScript types for Node.js built-ins |
+| `@types/pg` | ^8.20.0 | TypeScript types for `pg` package |
+| `@types/bcryptjs` | | TypeScript types for bcryptjs |
+| `@types/jsonwebtoken` | | TypeScript types for jsonwebtoken |
+| `eslint` | ^9 | Catches code errors and enforces style |
+
+### Install All At Once
+
+```bash
+# Dependencies (already installed — for reference)
+npm install next react react-dom drizzle-orm pg jsonwebtoken bcryptjs lucide-react zod axios dotenv
+
+# Dev Dependencies (already installed — for reference)  
+npm install --save-dev drizzle-kit tsx typescript tailwindcss @tailwindcss/postcss @types/node @types/pg @types/bcryptjs @types/jsonwebtoken eslint eslint-config-next
+```
+
+---
+
+## 🗃 Database Backup
+
+```bash
+# Create backup folder
 mkdir ~/db-backups
 
-Then:
+# Backup (replace with your DB URL)
+pg_dump "postgresql://postgres.[REF]:[PASS]@aws-0-[REGION].pooler.supabase.com:5432/postgres" \
+  | gzip > ~/db-backups/backup_$(date +%F).sql.gz
 
-pg_dump "..." | gzip > ~/db-backups/backup_$(date +%F).sql.gz
+# Restore from backup
+gunzip -c ~/db-backups/backup_2026-04-13.sql.gz \
+  | psql "postgresql://postgres.[REF]:[PASS]@aws-0-[REGION].pooler.supabase.com:5432/postgres"
+```
 
+---
 
-.env.local
-# Used by Drizzle to run migrations
-DATABASE_URL="postgresql://postgres.[YOUR_PROJECT_REF]:[YOUR_PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres"
+## 👥 Team Branches
+
+| Developer | Branch | Responsibility |
+|---|---|---|
+| Balaji | `balaji-admin` | Reception CRM Dashboard (this branch) |
+| Adithya + Team | `dev` | Guest Website, core structure |
+| Rajesh | `frontend-rajesh` | Guest Website frontend |
+
+**Supabase DB Login:**
+- Email: `balajimarpally931@gmail.com`
+- Password: `Colagoa@123`
+
+---
+
+## 🏛 Architecture Guides (for new developers)
+
+### utils/ vs lib/
+
+| Folder | Use For | Example |
+|---|---|---|
+| `utils/` | Simple pure functions, no packages needed | `formatDate()`, `formatCurrency()` |
+| `lib/` | Complex third-party setup | DB connection, JWT setup, email client |
+
+### components/ folders
+
+| Folder | Use For |
+|---|---|
+| `components/ui/` | Tiny reusable pieces: Button, Badge, Input, Modal |
+| `components/layout/` | Page structure: Sidebar, Topbar, Header |
+| `components/forms/` | Form components: BookingForm, LoginForm |
+| `components/tables/` | Data tables shared across pages |
+| `components/admin/` | Admin-specific components (RoomGrid, BookingModal) |
+
+### hooks/ folder
+
+Custom React hooks start with `use` — they encapsulate shared `useState + useEffect` logic:
+
+- `useAuth.ts` → checks login state, returns user
+- `useBookings.ts` → fetches bookings, returns `{ data, loading, error }`
+- **Rule:** If same logic is in 2+ pages → extract to a hook!
+
 
 # Used if you use the Supabase JS Client in your Next.js frontend
 NEXT_PUBLIC_SUPABASE_URL="https://jlkpuyuxsdaaatbcgvap.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsa3B1eXV4c2RhYWF0YmNndmFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzEwMDgsImV4cCI6MjA5MTQwNzAwOH0.Da0phfL1kcgnWysO5OP0Etlo8MpNht1nHFAEei5VbHg"
 
-DB credentials : 
-balajimarpally931@gmail.com
-password : Colagoa@123
+# JWT Secret for admin authentication
+JWT_SECRET="cola_goa_jwt_super_secret_change_in_production_2025"
 
-NEXT_PUBLIC_SUPABASE_URL="https://jlkpuyuxsdaaatbcgvap.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsa3B1eXV4c2RhYWF0YmNndmFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzEwMDgsImV4cCI6MjA5MTQwNzAwOH0.Da0phfL1kcgnWysO5OP0Etlo8MpNht1nHFAEei5VbHg"
-
-
-
-
-Users folder : page.tsx - app/users/page.tsx
-Admins :
-Admin/dashboard/page.tsx
-Admin/bookings/page.tsx
-Admin/rooms/page.tsx
-Admin/staff/page.tsx
-Admin/orders/page.tsx
-Admin/payments/page.tsx
-Admin/items/page.tsx
-
-
-Commands to follow : 
-git clone "https://github.com/adithya0618-afk/cola-goa.git"
-git checkout dev
-git pull origin dev
-git checkout -b "frontend-rajesh"
-git pull origin dev
-git add .
-git commit -m "frontend-rajesh"
-git push origin "frontend-rajesh"
-
+# App URL (for guest links)
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
