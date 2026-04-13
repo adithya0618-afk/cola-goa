@@ -381,6 +381,7 @@ npm install dotenv
 # create drizzle.config.ts
 
 npx drizzle-kit generate
+npx drizzle-kit migrate
 npx drizzle-kit push
 npx drizzle-kit studio
 
@@ -409,3 +410,31 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJz
 DB credentials : 
 balajimarpally931@gmail.com
 password : Colagoa@123
+
+NEXT_PUBLIC_SUPABASE_URL="https://jlkpuyuxsdaaatbcgvap.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsa3B1eXV4c2RhYWF0YmNndmFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzEwMDgsImV4cCI6MjA5MTQwNzAwOH0.Da0phfL1kcgnWysO5OP0Etlo8MpNht1nHFAEei5VbHg"
+
+
+
+
+Users folder : page.tsx - app/users/page.tsx
+Admins :
+Admin/dashboard/page.tsx
+Admin/bookings/page.tsx
+Admin/rooms/page.tsx
+Admin/staff/page.tsx
+Admin/orders/page.tsx
+Admin/payments/page.tsx
+Admin/items/page.tsx
+
+
+Commands to follow : 
+git clone "https://github.com/adithya0618-afk/cola-goa.git"
+git checkout dev
+git pull origin dev
+git checkout -b "frontend-rajesh"
+git pull origin dev
+git add .
+git commit -m "frontend-rajesh"
+git push origin "frontend-rajesh"
+

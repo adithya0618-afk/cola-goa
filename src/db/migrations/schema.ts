@@ -103,6 +103,9 @@ export const bookings = pgTable("bookings", {
     userId: uuid("user_id").references(() => users.id, {
         onDelete: "cascade",
     }),
+    name: text("name").references(() => users.name, {
+        onDelete: "cascade",
+    }),
 
     roomId: integer("room_id").references(() => rooms.id),
 
@@ -133,7 +136,8 @@ export const items = pgTable("items", {
     name: text("name").notNull(),
     type: itemTypeEnum("type"),
     category: text("category"),
-
+    description: text("description"),
+    image: text("image"),
     price: numeric("price").notNull(),
     isAvailable: boolean("is_available").default(true),
 
@@ -214,6 +218,9 @@ export const staff = pgTable("staff", {
     name: text("name"),
     role: text("role"),
     shift: text("shift"),
+    email: text("email").unique(),
+    phone: text("phone").unique(),
+    password: text("password"),
 
     createdAt: timestamp("created_at").defaultNow(),
 });
