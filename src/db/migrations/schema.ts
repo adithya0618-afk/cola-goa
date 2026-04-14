@@ -99,11 +99,14 @@ export const rooms = pgTable("rooms", {
 
 export const bookings = pgTable("bookings", {
     id: uuid("id").defaultRandom().primaryKey(),
+    bookingCode: text("booking_code").unique(),
 
     userId: uuid("user_id").references(() => users.id, {
         onDelete: "cascade",
     }),
-    name: text("name"),
+    name: text("name").references(() => users.name, {
+        onDelete: "cascade",
+    }),
 
     roomId: integer("room_id").references(() => rooms.id),
 
