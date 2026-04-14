@@ -7,6 +7,7 @@ CREATE TYPE "public"."payment_txn_status" AS ENUM('pending', 'success', 'failed'
 CREATE TYPE "public"."room_status" AS ENUM('available', 'occupied', 'maintenance');--> statement-breakpoint
 CREATE TABLE "bookings" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"booking_code" text,
 	"user_id" uuid,
 	"name" text,
 	"room_id" integer,
@@ -19,6 +20,7 @@ CREATE TABLE "bookings" (
 	"service_amount" numeric DEFAULT '0',
 	"total_amount" numeric DEFAULT '0',
 	"created_at" timestamp DEFAULT now(),
+	CONSTRAINT "bookings_booking_code_unique" UNIQUE("booking_code"),
 	CONSTRAINT "bookings_guest_token_unique" UNIQUE("guest_token")
 );
 --> statement-breakpoint

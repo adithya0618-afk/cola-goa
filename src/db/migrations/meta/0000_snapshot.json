@@ -1,5 +1,5 @@
 {
-  "id": "65722478-ac9b-4c61-bc8b-426483bb04b4",
+  "id": "9371dcd0-951b-40cd-8eaa-446602da7497",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -14,6 +14,12 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "booking_code": {
+          "name": "booking_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "user_id": {
           "name": "user_id",
@@ -127,6 +133,13 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
+        "bookings_booking_code_unique": {
+          "name": "bookings_booking_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "booking_code"
+          ]
+        },
         "bookings_guest_token_unique": {
           "name": "bookings_guest_token_unique",
           "nullsNotDistinct": false,
