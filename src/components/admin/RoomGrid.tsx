@@ -3,6 +3,8 @@
 import { useState, useCallback } from 'react';
 import { BedDouble, Wrench, Clock, Wifi } from 'lucide-react';
 import BookingModal from './BookingModal';
+import EditRoomModal from './EditRoomModal';
+import { Pencil } from 'lucide-react';
 
 interface Room {
   id: number;
@@ -48,6 +50,7 @@ const STATUS_CONFIG = {
 
 export default function RoomGrid({ rooms }: RoomGridProps) {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [editRoom, setEditRoom] = useState<Room | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleSuccess = useCallback(() => {
@@ -143,6 +146,20 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
+              {/* Edit Icon */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setEditRoom(room); }}
+                style={{
+                  position: 'absolute', top: 12, left: 12,
+                  background: '#fff', border: 'none', borderRadius: '50%',
+                  width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)', cursor: 'pointer', zIndex: 2,
+                  color: '#64748b'
+                }}
+              >
+                <Pencil size={14} />
+              </button>
+
               {/* Status dot */}
               <div style={{
                 position: 'absolute', top: 12, right: 12,
@@ -205,6 +222,15 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
         <BookingModal
           room={selectedRoom}
           onClose={() => setSelectedRoom(null)}
+          onSuccess={handleSuccess}
+        />
+      )}
+
+      {/* Edit Room & Invoice Modal */}
+      {editRoom && (
+        <EditRoomModal
+          room={editRoom}
+          onClose={() => setEditRoom(null)}
           onSuccess={handleSuccess}
         />
       )}

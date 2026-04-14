@@ -4,6 +4,59 @@
 
 ---
 
+## 🌟 Beginner's Educational Guide (How to build this!)
+
+Welcome! Whether you are a senior developer or a **10th-grade student learning to code**, this section will explain exactly how to build a powerful Hotel Management System from scratch. 
+
+We actually built **two** apps in one codebase:
+1. **The Guest Website (`/`)**: A public-facing site where random people can look at pictures of the resort.
+2. **The Admin Dashboard (`/admin`)**: A lock-and-key protected portal where receptionists manage the hotel.
+
+### 🧠 How We Wrote the Code (Easy Examples)
+
+If you want to build a website like this, you just need to understand three core pieces: **The Database, The Backend API, and The Frontend UI**.
+
+**A. The Database (Drizzle ORM)**
+Instead of writing confusing raw SQL, we use **TypeScript**. We define our tables in `src/db/migrations/schema.ts`.
+*Example of how we easily created the "rooms" table:*
+```typescript
+import { pgTable, serial, integer, text } from "drizzle-orm/pg-core";
+
+export const rooms = pgTable("rooms", {
+    id: serial("id").primaryKey(),                 // Auto-counts: 1, 2, 3
+    roomNumber: integer("room_number").unique(),  // Example: 101
+    pricePerNight: integer("price_per_night"),    // Example: 3500
+    status: text("status").default("available"),  // available or occupied
+});
+```
+
+**B. The Backend API (Route Handlers)**
+When you click a button on the screen, it sends an invisible message to our API. 
+*Example of how we fetch a specific room (`src/app/api/admin/rooms/[id]/route.ts`):*
+```typescript
+import db from '@/lib/db';
+import { rooms } from '@/db/migrations/schema';
+import { eq } from 'drizzle-orm';
+
+// This function runs when the browser asks for GET /api/admin/rooms/101
+export async function GET(request, { params }) {
+  const { id } = await params;
+  const myRoom = await db.select().from(rooms).where(eq(rooms.id, parseInt(id)));
+  return Response.json({ room: myRoom[0] });
+}
+```
+
+**C. The Frontend UI (React + Tailwind)**
+We use **React** to draw the buttons and **TailwindCSS** to color them instantly.
+*Example of a UI Button using descriptive words instead of tricky CSS:*
+```tsx
+<button className="bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold px-4 py-2">
+   Process Check-Out
+</button>
+```
+
+---
+
 ## 📋 Table of Contents
 
 1. [What Was Built](#-what-was-built)
@@ -16,6 +69,7 @@
 8. [NPM Packages — What & Why](#-npm-packages--what--why)
 9. [Git Workflow](#-git-workflow)
 10. [Database Backup](#-database-backup)
+11. [Team Architecture Guides](#-architecture-guides-for-new-developers)
 
 ---
 
@@ -36,8 +90,8 @@ This branch (`balaji-admin`) contains the complete **Reception CRM Dashboard** f
 |---|---|---|
 | Login | `/admin/login` | Secure login with bcrypt + JWT cookie |
 | Dashboard | `/admin/dashboard` | Stats overview, occupancy gauge, recent bookings |
-| Rooms | `/admin/rooms` | **BookMyShow-style grid** of 13 rooms — green=bookable, red=blocked |
-| Bookings | `/admin/bookings` | Full booking table, Check-In, Checkout, Cancel, Invoice |
+| Rooms | `/admin/rooms` | **BookMyShow-style grid**, Manage Prices, Status (Maintenance), Checkout, **PDF Invoice Downloads** |
+| Bookings | `/admin/bookings` | Full booking table, Check-In, Checkout, Cancel |
 | Orders | `/admin/orders` | Live food/service orders, Accept/Reject/Complete |
 | Menu/Items | `/admin/items` | Add/Edit/Delete food items and services |
 | Staff | `/admin/staff` | Manage staff members, roles, shifts |
@@ -75,6 +129,7 @@ src/
 │   │   ├── logout/route.ts
 │   │   ├── bookings/route.ts + [id]/route.ts + [id]/checkout/route.ts
 │   │   ├── orders/route.ts + [id]/route.ts
+│   │   ├── rooms/route.ts + [id]/route.ts
 │   │   ├── items/route.ts + [id]/route.ts
 │   │   └── staff/route.ts + [id]/route.ts
 │   │
@@ -86,7 +141,8 @@ src/
 │   └── admin/
 │       ├── AdminSidebar.tsx  ← Dark navy sidebar with nav + logout
 │       ├── AdminTopbar.tsx   ← Search + notifications + user avatar
-│       ├── RoomGrid.tsx      ← BookMyShow room selector
+│       ├── RoomGrid.tsx      ← BookMyShow room selector + Editable Configs
+│       ├── EditRoomModal.tsx ← Modal for Room Maintenance, Guest Edits, and Invoicing
 │       └── BookingModal.tsx  ← 3-step booking flow modal
 │
 ├── db/
@@ -136,7 +192,7 @@ bookings/
 | `GET` | `/api/admin/bookings` | List all bookings |
 | `POST` | `/api/admin/bookings` | Create a new booking (prevents double-booking) |
 | `PATCH` | `/api/admin/bookings/[id]` | Update booking status |
-| `POST` | `/api/admin/bookings/[id]/checkout` | Generate checkout invoice |
+| `PATCH` | `/api/admin/rooms/[id]` | Update Room Config, Process Checkouts, Overwrite User Info |
 | `GET` | `/api/admin/orders` | List all orders |
 | `PATCH` | `/api/admin/orders/[id]` | Accept/Reject/Complete an order |
 | `GET` | `/api/admin/items` | List all menu items |
@@ -250,8 +306,8 @@ jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
 ### Room Status Flow
 
 ```
-available → (booking created) → occupied → (checkout) → available
-available → (marked manually) → maintenance → (fixed) → available
+available → (admin disables) → maintenance 
+available → (booking created) → occupied → (manual checkout process) → available
 ```
 
 ### Booking Status Flow
@@ -288,7 +344,7 @@ DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-[REGION].pool
 # SUPABASE (for Supabase JS client if needed)
 # ============================================
 NEXT_PUBLIC_SUPABASE_URL="https://jlkpuyuxsdaaatbcgvap.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsa3B1eXV4c2RhYWF0YmNndmFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzEwMDgsImV4cCI6MjA5MTQwNzAwOH0.Da0phfL1kcgnWysO5OP0Etlo8MpNht1nHFAEei5VbHg"
 
 # ============================================
 # JWT — Admin Authentication
@@ -402,6 +458,8 @@ git pull origin dev
 | `lucide-react` | ^1.8.0 | Beautiful icon library — all the icons in sidebar, forms, buttons |
 | `zod` | ^4.3.6 | Schema validation — validate API request bodies safely |
 | `axios` | ^1.14.0 | HTTP client — for making API requests from frontend |
+| `jspdf` | ^2.5.1 | Generates structured PDF bills directly in the browser |
+| `jspdf-autotable` | ^3.8.2 | Renders dynamic pricing tables inside jsPDF output |
 | `dotenv` | ^17.4.1 | Loads `.env.local` variables into `process.env` |
 
 ### Development Dependencies
@@ -418,16 +476,6 @@ git pull origin dev
 | `@types/bcryptjs` | | TypeScript types for bcryptjs |
 | `@types/jsonwebtoken` | | TypeScript types for jsonwebtoken |
 | `eslint` | ^9 | Catches code errors and enforces style |
-
-### Install All At Once
-
-```bash
-# Dependencies (already installed — for reference)
-npm install next react react-dom drizzle-orm pg jsonwebtoken bcryptjs lucide-react zod axios dotenv
-
-# Dev Dependencies (already installed — for reference)  
-npm install --save-dev drizzle-kit tsx typescript tailwindcss @tailwindcss/postcss @types/node @types/pg @types/bcryptjs @types/jsonwebtoken eslint eslint-config-next
-```
 
 ---
 
@@ -488,14 +536,3 @@ Custom React hooks start with `use` — they encapsulate shared `useState + useE
 - `useAuth.ts` → checks login state, returns user
 - `useBookings.ts` → fetches bookings, returns `{ data, loading, error }`
 - **Rule:** If same logic is in 2+ pages → extract to a hook!
-
-
-# Used if you use the Supabase JS Client in your Next.js frontend
-NEXT_PUBLIC_SUPABASE_URL="https://jlkpuyuxsdaaatbcgvap.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsa3B1eXV4c2RhYWF0YmNndmFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzEwMDgsImV4cCI6MjA5MTQwNzAwOH0.Da0phfL1kcgnWysO5OP0Etlo8MpNht1nHFAEei5VbHg"
-
-# JWT Secret for admin authentication
-JWT_SECRET="cola_goa_jwt_super_secret_change_in_production_2025"
-
-# App URL (for guest links)
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
