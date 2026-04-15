@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, CheckCircle2, BedDouble, User, Settings2, Download, LogOut, Wrench, Phone, Mail } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { numberToWords, RESORT_DETAILS } from '@/lib/invoiceUtils';
 
 interface EditRoomModalProps {
   room: any;
@@ -149,89 +150,153 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
   const generateInvoice = () => {
     const doc = new jsPDF();
     
-    // Header
+    // Header - TAX INVOICE
     doc.setFontSize(22);
-    doc.setTextColor(14, 165, 233);
-    doc.text('Cola Goa Resort', 14, 22);
-    
-    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TAX INVOICE', 105, 20, { align: 'center' });
+    doc.setLineWidth(0.5);
+    doc.line(95, 23, 115, 23);
+
+    // Left Column: Buyer Details
+    doc.setFontSize(9);
     doc.setTextColor(100);
-    doc.text('Tax Invoice / Bill of Supply', 14, 30);
-    doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 14, 36);
-    doc.text(`Booking Ref: ${activeBooking?.bookingCode || activeBooking?.id?.substring(0,8) || 'N/A'}`, 14, 42);
-
-    // Guest Info
+    doc.setFont('helvetica', 'bold');
+    doc.text('Invoice To:', 14, 35);
+    
     doc.setFontSize(12);
-    doc.setTextColor(40);
-    doc.text('Bill To:', 140, 22);
-    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.text(guestName || 'Guest', 14, 42);
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
     doc.setTextColor(80);
-    doc.text(guestName || 'Guest', 140, 30);
-    doc.text(guestPhone || 'No Phone', 140, 36);
-    doc.text(guestEmail || 'No Email', 140, 42);
+    doc.text('GSTIN: Unregistered', 14, 48);
+    doc.text(`Address: Room ${room.roomNumber}, Cola Goa Resort, Goa`, 14, 54);
+    doc.text(`Order ID: ${activeBooking?.id?.substring(0, 12)?.toUpperCase() || 'N/A'}`, 14, 65);
 
-    // Line
-    doc.setDrawColor(200);
-    doc.line(14, 48, 196, 48);
+    // Right Column: Seller Details
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(100);
+    doc.text('Seller Details:', 120, 35);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    doc.text(RESORT_DETAILS.name, 120, 42);
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80);
+    doc.text(`GSTIN: ${RESORT_DETAILS.gstin}`, 120, 48);
+    doc.text(`FSSAI: ${RESORT_DETAILS.fssai}`, 120, 54);
+    doc.text(RESORT_DETAILS.address, 120, 60, { maxWidth: 70 });
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 120, 75);
+    doc.text(`Supply: ${RESORT_DETAILS.state}`, 120, 81);
+    doc.text(`Category: ${RESORT_DETAILS.serviceDescription}`, 120, 87);
 
-    // Stay Details
-    doc.setFontSize(12);
-    doc.setTextColor(40);
-    doc.text(`Room: ${room.roomNumber}`, 14, 60);
-    doc.setFontSize(10);
-    doc.text(`Check In: ${activeBooking?.checkInDate || 'N/A'}`, 14, 68);
-    doc.text(`Check Out: ${activeBooking?.checkOutDate || 'N/A'}`, 14, 74);
-    doc.text(`Rate: INR ${room.pricePerNight}/night`, 14, 80);
+    // Stay Details Line
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.2);
+    doc.line(14, 92, 196, 92);
 
-    // Room charges calculation (simplified for presentation)
-    // You would normally parse dates to calculate exact nights
-    const ci = new Date(activeBooking?.checkInDate);
-    const co = new Date(activeBooking?.checkOutDate);
+    // Calculations
+    const ci = activeBooking?.checkInDate ? new Date(activeBooking.checkInDate) : new Date();
+    const co = activeBooking?.checkOutDate ? new Date(activeBooking.checkOutDate) : new Date();
     let nights = 1;
     if (!isNaN(ci.getTime()) && !isNaN(co.getTime()) && co > ci) {
         nights = Math.ceil((co.getTime() - ci.getTime()) / (1000 * 60 * 60 * 24));
     }
-    if (nights === 0) nights = 1; // Minimum 1 night
-    const roomTotal = nights * Number(room.pricePerNight);
+    if (nights === 0) nights = 1;
 
-    const tableData = [
-      ['Room Charges', `${nights} Nights`, `₹${room.pricePerNight}`, `₹${roomTotal}`]
+    const roomTotal = nights * Number(room.pricePerNight);
+    let itemsTotal = 0;
+    const tableBody: any[] = [
+        [1, `Room Stay - Room ${room.roomNumber}\n(${activeBooking?.checkInDate || 'N/A'} to ${activeBooking?.checkOutDate || 'N/A'})`, 'OTH', nights, Number(room.pricePerNight).toFixed(2), roomTotal.toFixed(2), '0.00', roomTotal.toFixed(2)]
     ];
 
-    let itemsTotal = 0;
-    roomOrders.forEach((o: any) => {
-        const itemTotal = Number(o.price); // Price usually includes quantity logic in your schema, assuming fixed here for now
+    roomOrders.forEach((o: any, idx: number) => {
+        const itemTotal = Number(o.price);
         itemsTotal += itemTotal;
-        tableData.push([
+        tableBody.push([
+            idx + 2, 
             o.itemData?.name || 'Service/Item', 
-            `Qty: ${o.quantity}`, 
-            `₹${o.price / o.quantity}`, 
-            `₹${itemTotal}`
+            'OTH', 
+            o.quantity, 
+            (o.price / o.quantity).toFixed(2), 
+            itemTotal.toFixed(2),
+            '0.00',
+            itemTotal.toFixed(2)
         ]);
     });
 
-    const grandTotal = roomTotal + itemsTotal;
+    const subtotal = roomTotal + itemsTotal;
+    const cgst = subtotal * 0.025;
+    const sgst = subtotal * 0.025;
+    const grandTotal = subtotal + cgst + sgst;
 
+    // Table
     autoTable(doc, {
-        startY: 90,
-        head: [['Description', 'Details', 'Unit Price', 'Total']],
-        body: tableData,
-        theme: 'striped',
-        headStyles: { fillColor: [14, 165, 233] },
-        styles: { fontSize: 10, cellPadding: 5 }
+        startY: 95,
+        head: [['Sr No', 'Description', 'UOM', 'Qty', 'Unit Price', 'Amount', 'Disc', 'Net Value']],
+        body: tableBody,
+        theme: 'grid',
+        headStyles: { fillColor: [240, 240, 240], textColor: 0, lineWidth: 0.1, lineColor: 0, fontStyle: 'bold', fontSize: 8 },
+        styles: { fontSize: 8, cellPadding: 3, lineColor: 0, lineWidth: 0.1 },
+        columnStyles: {
+            0: { halign: 'center' },
+            1: { cellWidth: 50 },
+            2: { halign: 'center' },
+            3: { halign: 'center' },
+            4: { halign: 'right' },
+            5: { halign: 'right' },
+            6: { halign: 'right' },
+            7: { halign: 'right' }
+        }
     });
 
-    const finalY = (doc as any).lastAutoTable.finalY || 90;
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
 
-    doc.setFontSize(12);
-    doc.setTextColor(40);
-    doc.text(`Total Amount: Rs. ${grandTotal.toLocaleString('en-IN')}/-`, 140, finalY + 15);
+    // Totals Table Mimic
+    doc.setDrawColor(0);
+    doc.rect(14, finalY, 110, 25);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Invoice total in words:', 17, finalY + 7);
+    doc.setFont('helvetica', 'italic');
+    doc.text(numberToWords(grandTotal), 17, finalY + 15, { maxWidth: 100 });
+
+    doc.rect(130, finalY, 66, 25);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Subtotal:', 133, finalY + 6);
+    doc.text(subtotal.toLocaleString(), 193, finalY + 6, { align: 'right' });
+    doc.text('CGST (2.5%):', 133, finalY + 11);
+    doc.text(cgst.toFixed(2), 193, finalY + 11, { align: 'right' });
+    doc.text('SGST (2.5%):', 133, finalY + 16);
+    doc.text(sgst.toFixed(2), 193, finalY + 16, { align: 'right' });
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Invoice Total:', 133, finalY + 22);
+    doc.text(`Rs. ${grandTotal.toLocaleString()}`, 193, finalY + 22, { align: 'right' });
 
     // Footer
+    const footerY = 270;
+    doc.line(14, footerY, 196, footerY);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0);
+    doc.text('Details of ECO under GST:', 14, footerY + 5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100);
+    doc.text(`${RESORT_DETAILS.name}\n${RESORT_DETAILS.address}\nGSTIN: ${RESORT_DETAILS.gstin}`, 14, footerY + 10);
+
     doc.setFontSize(9);
-    doc.setTextColor(150);
-    doc.text('Thank you for staying with Cola Goa Beach Resort!', 14, 280);
-    doc.text('This is a computer-generated invoice and does not require a signature.', 14, 285);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0);
+    doc.text('Authorized Signature', 160, footerY + 15);
+    doc.line(150, footerY + 10, 196, footerY + 10);
 
     doc.save(`Invoice_Room_${room.roomNumber}_${guestName.replace(/\s+/g, '_')}.pdf`);
   };

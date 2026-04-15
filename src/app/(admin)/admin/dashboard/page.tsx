@@ -1,4 +1,4 @@
-import { BedDouble, CalendarCheck, DollarSign, Clock, TrendingUp, Users } from 'lucide-react';
+import { BedDouble, CalendarCheck, DollarSign, Clock, TrendingUp, Users, LogOut } from 'lucide-react';
 import db from '@/lib/db';
 import { rooms, bookings, payments, staff, orders } from '@/db/migrations/schema';
 import { eq, and, sql, ne, count } from 'drizzle-orm';
@@ -58,13 +58,52 @@ async function getDashboardStats() {
 
 async function getRecentBookings() {
   try {
-    return await db.select().from(bookings).orderBy(sql`created_at DESC`).limit(5);
+    return await db.select({
+      id: bookings.id,
+      name: bookings.name,
+      roomId: bookings.roomId,
+      roomNumber: rooms.roomNumber,
+      checkInDate: bookings.checkInDate,
+      checkOutDate: bookings.checkOutDate,
+      status: bookings.status,
+      paymentStatus: bookings.paymentStatus,
+    })
+      .from(bookings)
+      .innerJoin(rooms, eq(bookings.roomId, rooms.id))
+      .orderBy(sql`bookings.created_at DESC`)
+      .limit(5);
   } catch { return []; }
+}
+
+async function getTodaysCheckouts() {
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    return await db.select({
+      id: bookings.id,
+      name: bookings.name,
+      roomNumber: rooms.roomNumber,
+      status: bookings.status,
+      checkOutDate: bookings.checkOutDate
+    })
+      .from(bookings)
+      .innerJoin(rooms, eq(bookings.roomId, rooms.id))
+      .where(
+        and(
+          eq(bookings.checkOutDate, today),
+          ne(bookings.status, 'cancelled'),
+          ne(bookings.status, 'checked_out')
+        )
+      );
+  } catch {
+    return [];
+  }
 }
 
 export default async function DashboardPage() {
   const stats = await getDashboardStats();
   const recentBookings = await getRecentBookings();
+  const todaysCheckouts = await getTodaysCheckouts();
+  const todayDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
   const statCards = [
     {
@@ -78,10 +117,6 @@ export default async function DashboardPage() {
     {
       label: 'Available Rooms', value: stats.availableRooms, icon: TrendingUp,
       color: '#10b981', bg: '#d1fae5', suffix: '',
-    },
-    {
-      label: 'Total Revenue', value: `₹${stats.revenue.toLocaleString('en-IN')}`, icon: DollarSign,
-      color: '#8b5cf6', bg: '#ede9fe', suffix: '',
     },
     {
       label: 'Pending Payments', value: stats.pendingPayments, icon: Clock,
@@ -149,37 +184,78 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <div className="table-wrapper">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Guest</th>
-                <th>Room</th>
-                <th>Check-In</th>
-                <th>Check-Out</th>
-                <th>Status</th>
-                <th>Payment</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentBookings.length === 0 ? (
-                <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>No bookings yet</td></tr>
-              ) : recentBookings.map((b) => (
-                <tr key={b.id}>
-                  <td style={{ fontWeight: 500 }}>{b.name || '—'}</td>
-                  <td>Room {b.roomId}</td>
-                  <td>{b.checkInDate}</td>
-                  <td>{b.checkOutDate}</td>
-                  <td><span className={`badge ${statusColor(b.status ?? '')}`}>{b.status}</span></td>
-                  <td><span className={`badge ${b.paymentStatus === 'paid' ? 'badge-success' : b.paymentStatus === 'partial' ? 'badge-warning' : 'badge-danger'}`}>{b.paymentStatus}</span></td>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Guest</th>
+                  <th>Room</th>
+                  <th>Check-In</th>
+                  <th>Check-Out</th>
+                  <th>Status</th>
+                  <th>Payment</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {recentBookings.length === 0 ? (
+                  <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 32 }}>No bookings yet</td></tr>
+                ) : recentBookings.map((b) => (
+                  <tr key={b.id}>
+                    <td style={{ fontWeight: 500 }}>{b.name || '—'}</td>
+                    <td>{b.roomNumber}</td>
+                    <td>{b.checkInDate}</td>
+                    <td>{b.checkOutDate}</td>
+                    <td><span className={`badge ${statusColor(b.status ?? '')}`}>{b.status}</span></td>
+                    <td><span className={`badge ${b.paymentStatus === 'paid' ? 'badge-success' : b.paymentStatus === 'partial' ? 'badge-warning' : 'badge-danger'}`}>{b.paymentStatus}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
         {/* Occupancy Card */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Today's Checkouts first as requested */}
+          <div className="card" style={{ padding: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700 }}>Today&#39;s Checkouts</h2>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>{todayDate}</div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {todaysCheckouts.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text-muted)', fontSize: 13 }}>
+                  No checkouts scheduled for today.
+                </div>
+              ) : todaysCheckouts.map((c) => (
+                <div key={c.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '10px 14px', background: 'var(--bg-base)', borderRadius: 10,
+                  border: '1.5px solid var(--border)'
+                }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 8, background: 'var(--danger-light)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                  }}>
+                    <LogOut size={16} color="var(--danger)" />
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {c.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>
+                      Room {c.roomNumber}
+                    </div>
+                  </div>
+                  <div className="badge badge-warning" style={{ fontSize: 10, padding: '2px 8px' }}>
+                    Scheduled
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Occupancy Rate second */}
           <div className="card" style={{ padding: 24 }}>
             <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 20 }}>Occupancy Rate</h2>
             <div style={{ textAlign: 'center' }}>

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Filter, ExternalLink, CheckCircle, LogOut, X } from 'lucide-react';
+import { Search, Filter, ExternalLink, CheckCircle, LogOut, X, AlertTriangle, FileText, Printer } from 'lucide-react';
+import { numberToWords, RESORT_DETAILS } from '@/lib/invoiceUtils';
 
 interface Booking {
   id: string;
@@ -27,6 +28,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
   const [updating, setUpdating] = useState<string | null>(null);
   const [checkoutBooking, setCheckoutBooking] = useState<Booking | null>(null);
   const [checkoutInvoice, setCheckoutInvoice] = useState<Record<string, unknown> | null>(null);
+  const [cancelBooking, setCancelBooking] = useState<Booking | null>(null);
 
   const roomMap = Object.fromEntries(rooms.map(r => [r.id, r.roomNumber]));
 
@@ -185,7 +187,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
                       <button
                         className="btn btn-sm"
                         disabled={updating === b.id}
-                        onClick={() => updateStatus(b.id, 'cancelled')}
+                        onClick={() => setCancelBooking(b)}
                         style={{ background: '#fee2e2', color: '#991b1b', border: 'none' }}
                       >
                         <X size={12} /> Cancel
@@ -209,6 +211,77 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
           onClose={() => { setCheckoutBooking(null); setCheckoutInvoice(null); window.location.reload(); }}
         />
       )}
+
+      {/* Nice Cancel Confirmation Modal */}
+      {cancelBooking && (
+        <ConfirmCancelModal
+          booking={cancelBooking}
+          roomNumber={roomMap[cancelBooking.roomId ?? 0]}
+          onClose={() => setCancelBooking(null)}
+          onConfirm={() => {
+            updateStatus(cancelBooking.id, 'cancelled');
+            setCancelBooking(null);
+          }}
+          isUpdating={updating === cancelBooking.id}
+        />
+      )}
+    </div>
+  );
+}
+
+function ConfirmCancelModal({ booking, roomNumber, onClose, onConfirm, isUpdating }: {
+  booking: Booking;
+  roomNumber: number;
+  onClose: () => void;
+  onConfirm: () => void;
+  isUpdating: boolean;
+}) {
+  return (
+    <div className="overlay animate-fade-in" style={{ zIndex: 60 }} onClick={onClose}>
+      <div 
+        className="modal" 
+        style={{ maxWidth: 400, textAlign: 'center', padding: 32 }} 
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{
+          width: 64, height: 64, borderRadius: '50%', background: 'var(--danger-light)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          margin: '0 auto 20px'
+        }}>
+          <AlertTriangle size={32} color="var(--danger)" />
+        </div>
+        
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 12 }}>
+          Cancel Booking?
+        </h2>
+        
+        <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
+          Are you sure you want to cancel the booking for <strong style={{ color: 'var(--text-primary)' }}>{booking.name}</strong> in <strong style={{ color: 'var(--text-primary)' }}>Room {roomNumber}</strong>? This action cannot be undone.
+        </p>
+
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button 
+            className="btn btn-outline" 
+            onClick={onClose} 
+            disabled={isUpdating}
+            style={{ flex: 1, justifyContent: 'center' }}
+          >
+            No, Keep it
+          </button>
+          <button 
+            className="btn" 
+            onClick={onConfirm}
+            disabled={isUpdating}
+            style={{ 
+              flex: 1, justifyContent: 'center', 
+              background: 'var(--danger)', color: '#fff',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)' 
+            }}
+          >
+            {isUpdating ? 'Cancelling...' : 'Yes, Cancel'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -226,52 +299,180 @@ function CheckoutInvoiceModal({ booking, invoice, roomNumber, onClose }: {
     orders?: Array<{ id: string; totalAmount: string; status: string; createdAt: string }>;
   };
 
+  const subtotal = Number(inv.roomAmount) + Number(inv.serviceAmount);
+  const sgst = (subtotal * 0.025);
+  const cgst = (subtotal * 0.025);
+  const totalWithTax = subtotal + sgst + cgst;
+
   return (
-    <div className="overlay" onClick={onClose}>
-      <div className="modal animate-fade-in" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
-        <div style={{ padding: '22px 28px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 17 }}>🧾 Checkout Invoice</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Room {roomNumber} · {booking.name}</div>
+    <div className="overlay animate-fade-in" onClick={onClose} style={{ zIndex: 100 }}>
+      {/* Print Styles */}
+      <style>{`
+        @media print {
+          body * { visibility: hidden; }
+          .printable-invoice, .printable-invoice * { visibility: visible; }
+          .printable-invoice { 
+            position: absolute; left: 0; top: 0; width: 100%; 
+            padding: 40px !important; box-shadow: none !important; border: none !important;
+          }
+          .no-print { display: none !important; }
+        }
+      `}</style>
+
+      <div className="modal printable-invoice" style={{ maxWidth: 850, padding: 0 }} onClick={e => e.stopPropagation()}>
+        {/* Modal Header (UI only) */}
+        <div className="no-print" style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fcfcfc' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <FileText size={18} color="var(--accent)" />
+            <span style={{ fontWeight: 700 }}>Tax Invoice Preview</span>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} color="var(--text-secondary)" /></button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}><X size={20} color="var(--text-muted)" /></button>
         </div>
-        <div style={{ padding: 28 }}>
-          <div style={{ background: 'var(--bg-base)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
-            {[
-              ['Check-In', booking.checkInDate],
-              ['Check-Out', booking.checkOutDate],
-              ['Room Amount', `₹${Number(inv.roomAmount).toLocaleString('en-IN')}`],
-              ['Services / Food', `₹${Number(inv.serviceAmount).toLocaleString('en-IN')}`],
-            ].map(([k, v]) => (
-              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid var(--border)', fontSize: 14 }}>
-                <span style={{ color: 'var(--text-secondary)' }}>{k}</span>
-                <span style={{ fontWeight: 600 }}>{v}</span>
+
+        <div style={{ padding: 40 }}>
+          {/* Document Header */}
+          <div style={{ textAlign: 'center', marginBottom: 30 }}>
+            <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: '2px', marginBottom: 5 }}>TAX INVOICE</div>
+            <div style={{ height: 2, background: '#000', width: 100, margin: '0 auto' }}></div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, marginBottom: 30, fontSize: 13 }}>
+            {/* Left: Buyer Details */}
+            <div>
+              <div style={{ fontWeight: 800, textTransform: 'uppercase', color: '#666', marginBottom: 8 }}>Invoice To:</div>
+              <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4 }}>{booking.name}</div>
+              <div style={{ color: '#444', marginBottom: 2 }}>GSTIN: Unregistered</div>
+              <div style={{ color: '#444', lineHeight: 1.5 }}>
+                Room {roomNumber}, Cola Goa Resort,<br />
+                Cola Beach, South Goa
               </div>
-            ))}
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, fontSize: 18, fontWeight: 900 }}>
-              <span>Grand Total</span>
-              <span style={{ color: 'var(--accent)' }}>₹{Number(inv.totalAmount).toLocaleString('en-IN')}</span>
+              <div style={{ marginTop: 15 }}>
+                <span style={{ fontWeight: 700 }}>Order ID:</span> {booking.id.substring(0, 12).toUpperCase()}
+              </div>
+            </div>
+
+            {/* Right: Seller Details */}
+            <div>
+              <div style={{ fontWeight: 800, textTransform: 'uppercase', color: '#666', marginBottom: 8 }}>Seller Details:</div>
+              <div style={{ fontSize: 16, fontWeight: 900, marginBottom: 4 }}>{RESORT_DETAILS.name}</div>
+              <div style={{ marginBottom: 2 }}><span style={{ fontWeight: 700 }}>GSTIN:</span> {RESORT_DETAILS.gstin}</div>
+              <div style={{ marginBottom: 2 }}><span style={{ fontWeight: 700 }}>FSSAI:</span> {RESORT_DETAILS.fssai}</div>
+              <div style={{ color: '#444', lineHeight: 1.5, marginBottom: 10 }}>{RESORT_DETAILS.address}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', rowGap: 4 }}>
+                <span style={{ fontWeight: 700 }}>Date:</span> <span>{new Date().toLocaleDateString()}</span>
+                <span style={{ fontWeight: 700 }}>Category:</span> <span>{RESORT_DETAILS.serviceDescription}</span>
+                <span style={{ fontWeight: 700 }}>Supply:</span> <span>{RESORT_DETAILS.state}</span>
+              </div>
             </div>
           </div>
 
-          {Array.isArray(inv.orders) && inv.orders.length > 0 && (
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>Orders</div>
-              {inv.orders.map((o) => (
-                <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 12px', background: 'var(--bg-base)', borderRadius: 8, marginBottom: 6, fontSize: 13 }}>
-                  <span>{new Date(o.createdAt).toLocaleDateString()}</span>
-                  <span className={`badge ${o.status === 'completed' ? 'badge-success' : 'badge-warning'}`}>{o.status}</span>
-                  <span style={{ fontWeight: 700 }}>₹{Number(o.totalAmount).toLocaleString('en-IN')}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Table */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5px solid #000', marginBottom: 20 }}>
+            <thead>
+              <tr style={{ background: '#f8f8f8' }}>
+                <th style={{ border: '1px solid #000', padding: '10px 8px', textAlign: 'center', fontSize: 11 }}>Sr No</th>
+                <th style={{ border: '1px solid #000', padding: '10px 8px', textAlign: 'left', fontSize: 11, width: '40%' }}>Description</th>
+                <th style={{ border: '1px solid #000', padding: '10px 8px', textAlign: 'center', fontSize: 11 }}>UOM</th>
+                <th style={{ border: '1px solid #000', padding: '10px 8px', textAlign: 'center', fontSize: 11 }}>Qty</th>
+                <th style={{ border: '1px solid #000', padding: '10px 8px', textAlign: 'right', fontSize: 11 }}>Unit Price</th>
+                <th style={{ border: '1px solid #000', padding: '10px 8px', textAlign: 'right', fontSize: 11 }}>Amount(Rs)</th>
+                <th style={{ border: '1px solid #000', padding: '10px 8px', textAlign: 'right', fontSize: 11 }}>Net Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={{ border: '1px solid #000', padding: 10, textAlign: 'center' }}>1.</td>
+                <td style={{ border: '1px solid #000', padding: 10 }}>
+                  <div style={{ fontWeight: 700 }}>Room Stay - Room {roomNumber}</div>
+                  <div style={{ fontSize: 10, color: '#666', marginTop: 2 }}>{booking.checkInDate} to {booking.checkOutDate}</div>
+                </td>
+                <td style={{ border: '1px solid #000', padding: 10, textAlign: 'center' }}>OTH</td>
+                <td style={{ border: '1px solid #000', padding: 10, textAlign: 'center' }}>1</td>
+                <td style={{ border: '1px solid #000', padding: 10, textAlign: 'right' }}>{Number(inv.roomAmount).toLocaleString()}</td>
+                <td style={{ border: '1px solid #000', padding: 10, textAlign: 'right' }}>{Number(inv.roomAmount).toLocaleString()}</td>
+                <td style={{ border: '1px solid #000', padding: 10, textAlign: 'right' }}>{Number(inv.roomAmount).toLocaleString()}</td>
+              </tr>
+              {inv.serviceAmount > 0 && (
+                <tr>
+                  <td style={{ border: '1px solid #000', padding: 10, textAlign: 'center' }}>2.</td>
+                  <td style={{ border: '1px solid #000', padding: 10 }}>Services & Add-ons</td>
+                  <td style={{ border: '1px solid #000', padding: 10, textAlign: 'center' }}>OTH</td>
+                  <td style={{ border: '1px solid #000', padding: 10, textAlign: 'center' }}>1</td>
+                  <td style={{ border: '1px solid #000', padding: 10, textAlign: 'right' }}>{Number(inv.serviceAmount).toLocaleString()}</td>
+                  <td style={{ border: '1px solid #000', padding: 10, textAlign: 'right' }}>{Number(inv.serviceAmount).toLocaleString()}</td>
+                  <td style={{ border: '1px solid #000', padding: 10, textAlign: 'right' }}>{Number(inv.serviceAmount).toLocaleString()}</td>
+                </tr>
+              )}
+              {/* Padding rows */}
+              <tr style={{ height: 40 }}>
+                <td style={{ border: '1px solid #000' }}></td><td style={{ border: '1px solid #000' }}></td><td style={{ border: '1px solid #000' }}></td>
+                <td style={{ border: '1px solid #000' }}></td><td style={{ border: '1px solid #000' }}></td><td style={{ border: '1px solid #000' }}></td>
+                <td style={{ border: '1px solid #000' }}></td>
+              </tr>
+              <tr style={{ fontWeight: 800 }}>
+                <td colSpan={2} style={{ border: '1px solid #000', padding: 10, textAlign: 'center' }}>Subtotal</td>
+                <td colSpan={5} style={{ border: '1px solid #000', padding: 10, textAlign: 'right' }}>₹{subtotal.toLocaleString()}</td>
+              </tr>
+            </tbody>
+          </table>
 
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button className="btn btn-outline" onClick={onClose} style={{ flex: 1 }}>Close</button>
-            <button className="btn btn-primary" onClick={() => window.print()} style={{ flex: 1 }}>🖨️ Print Invoice</button>
+          {/* Totals Section */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 20 }}>
+            <div>
+              <div style={{ border: '1px solid #000', padding: 10, fontSize: 12, height: '100%' }}>
+                <div style={{ fontWeight: 800, marginBottom: 5 }}>Invoice total in words:</div>
+                <div style={{ fontStyle: 'italic' }}>{numberToWords(totalWithTax)}</div>
+              </div>
+            </div>
+            <div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000', fontSize: 13 }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: 8, fontWeight: 700 }}>Taxes</td>
+                    <td style={{ padding: 8, fontWeight: 700, textAlign: 'right' }}>Rate</td>
+                    <td style={{ padding: 8, fontWeight: 700, textAlign: 'right' }}>Amount</td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: 8 }}>CGST</td>
+                    <td style={{ padding: 8, textAlign: 'right' }}>2.5%</td>
+                    <td style={{ padding: 8, textAlign: 'right' }}>{cgst.toFixed(2)}</td>
+                  </tr>
+                   <tr>
+                    <td style={{ padding: 8 }}>SGST</td>
+                    <td style={{ padding: 8, textAlign: 'right' }}>2.5%</td>
+                    <td style={{ padding: 8, textAlign: 'right' }}>{sgst.toFixed(2)}</td>
+                  </tr>
+                  <tr style={{ background: '#f8f8f8', fontWeight: 900, fontSize: 16 }}>
+                    <td style={{ padding: 12 }}>Invoice Total</td>
+                    <td colSpan={2} style={{ padding: 12, textAlign: 'right' }}>₹{totalWithTax.toLocaleString()}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          <div style={{ marginTop: 40, borderTop: '1px solid #000', paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <div style={{ fontSize: 11, color: '#666', maxWidth: 350 }}>
+              <div style={{ fontWeight: 800, color: '#000', marginBottom: 5 }}>Details of ECO under GST:</div>
+              {RESORT_DETAILS.name} (formerly known as Cola Goa Pvt Ltd)<br />
+              {RESORT_DETAILS.address}<br />
+              GSTIN: {RESORT_DETAILS.gstin}
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ height: 60 }}></div>
+              <div style={{ fontWeight: 800, fontSize: 13, borderTop: '1px solid #000', paddingTop: 8, minWidth: 200 }}>
+                Authorized Signature
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Footer (UI only) */}
+        <div className="no-print" style={{ padding: '20px 40px', background: '#fcfcfc', borderTop: '1px solid var(--border)', display: 'flex', gap: 12 }}>
+          <button className="btn btn-outline" onClick={onClose} style={{ flex: 1, height: 44 }}>Cancel</button>
+          <button className="btn btn-primary" onClick={() => window.print()} style={{ flex: 2, height: 44 }}>
+            <Printer size={16} /> Print Tax Invoice
+          </button>
         </div>
       </div>
     </div>
