@@ -14,6 +14,7 @@ export default function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
         {/* Hamburger — shown on tablet/mobile */}
         <button
           onClick={onMenuToggle}
+          suppressHydrationWarning
           className="topbar-menu-btn"
           style={{
             width: 38, height: 38, borderRadius: 10,
@@ -36,6 +37,7 @@ export default function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
           <Search size={15} color="var(--text-muted)" />
           <input
             placeholder="Search bookings, rooms, guests..."
+            suppressHydrationWarning
             style={{
               border: 'none', background: 'transparent', outline: 'none',
               fontSize: 13, color: 'var(--text-primary)', width: '100%',
@@ -47,13 +49,16 @@ export default function AdminTopbar({ onMenuToggle }: AdminTopbarProps) {
 
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-        <button style={{
-          width: 38, height: 38, borderRadius: 10,
-          border: '1.5px solid var(--border)',
-          background: 'var(--bg-base)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer',
-        }}>
+        <button 
+          suppressHydrationWarning
+          style={{
+            width: 38, height: 38, borderRadius: 10,
+            border: '1.5px solid var(--border)',
+            background: 'var(--bg-base)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
           <Bell size={16} color="var(--text-secondary)" />
         </button>
 

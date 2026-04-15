@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={inter.className} style={{ background: 'var(--sidebar-bg)', minHeight: '100vh' }}>
+    <div className={inter.className} style={{ minHeight: '100vh' }}>
       {children}
     </div>
   );

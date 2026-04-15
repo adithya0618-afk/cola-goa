@@ -1,6 +1,6 @@
 import { BedDouble, CalendarCheck, DollarSign, Clock, TrendingUp, Users } from 'lucide-react';
 import db from '@/lib/db';
-import { rooms, bookings, payments, staff } from '@/db/migrations/schema';
+import { rooms, bookings, payments, staff, orders } from '@/db/migrations/schema';
 import { eq, and, sql, ne, count } from 'drizzle-orm';
 import Link from 'next/link';
 
@@ -14,6 +14,7 @@ async function getDashboardStats() {
       revenueRes,
       pendingPaymentsRes,
       totalStaffRes,
+      pendingOrdersRes,
     ] = await Promise.all([
       db.select({ count: count() }).from(rooms),
       db.select({ count: count() }).from(rooms).where(eq(rooms.status, 'occupied')),
@@ -24,6 +25,7 @@ async function getDashboardStats() {
       db.select({ total: sql<number>`COALESCE(SUM(amount),0)` }).from(payments).where(eq(payments.status, 'success')),
       db.select({ count: count() }).from(bookings).where(eq(bookings.paymentStatus, 'pending')),
       db.select({ count: count() }).from(staff),
+      db.select({ count: count() }).from(orders).where(eq(orders.status, 'pending')),
     ]);
 
     const [totalRooms] = totalRoomsRes;
@@ -43,11 +45,13 @@ async function getDashboardStats() {
       revenue: Number(revenue?.total ?? 0),
       pendingPayments: pendingPayments?.count ?? 0,
       totalStaff: totalStaff?.count ?? 0,
+      pendingOrders: pendingOrdersRes[0]?.count ?? 0,
     };
   } catch {
     return {
       totalRooms: 13, occupiedRooms: 0, availableRooms: 13,
       maintenanceRooms: 0, activeBookings: 0, revenue: 0, pendingPayments: 0, totalStaff: 0,
+      pendingOrders: 0,
     };
   }
 }
@@ -103,13 +107,16 @@ export default async function DashboardPage() {
 
   return (
     <div className="animate-fade-in">
-      <div className="page-header" style={{ marginBottom: 28 }}>
+      <div className="page-header" style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Dashboard Overview</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
             Welcome back! Here is what&#39;s happening at Cola Goa Resort.
           </p>
         </div>
+        <Link href="/admin/rooms">
+          <button className="btn btn-primary" suppressHydrationWarning>+ New Booking</button>
+        </Link>
       </div>
 
       {/* Stat Cards */}
@@ -208,11 +215,23 @@ export default async function DashboardPage() {
           <div className="card" style={{ padding: 24 }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>Quick Actions</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <Link href="/admin/rooms" style={{ textDecoration: 'none' }}>
-                <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>+ New Booking</button>
-              </Link>
               <Link href="/admin/orders" style={{ textDecoration: 'none' }}>
-                <button className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }}>View Orders</button>
+                <button className="btn btn-primary" suppressHydrationWarning style={{ width: '100%', justifyContent: 'center', position: 'relative' }}>
+                  View Orders
+                  {stats.pendingOrders > 0 && (
+                    <span style={{
+                      position: 'absolute', top: -8, right: -8,
+                      background: '#ef4444', color: 'white',
+                      fontSize: 10, fontWeight: 800,
+                      minWidth: 18, height: 18, borderRadius: 9,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      padding: '0 4px', border: '2px solid white',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                    }}>
+                      {stats.pendingOrders}
+                    </span>
+                  )}
+                </button>
               </Link>
             </div>
           </div>

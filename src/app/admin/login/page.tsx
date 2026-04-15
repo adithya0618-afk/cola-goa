@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { User, Lock, CheckCircle2, ShieldCheck, Globe, HelpCircle, FileText } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Suspense } from 'react';
 
 function LoginForm() {
@@ -43,7 +44,7 @@ function LoginForm() {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100%', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100vh', width: '100%', overflow: 'hidden', background: '#fff', colorScheme: 'light' }}>
       {/* Left Pane: Branding & Info */}
       <div style={{
         flex: 1.5,
@@ -60,9 +61,15 @@ function LoginForm() {
         
         <div style={{ position: 'relative', zIndex: 1, padding: '40px 60px', flex: 1, display: 'flex', flexDirection: 'column' }}>
           {/* Logo Section */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 'auto' }}>
-            <div style={{ width: 32, height: 32, borderRadius: '70%', background: '#fff' }} />
-            <span style={{ color: '#fff', fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>Cola Goa Beach Resort</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 'auto' }}>
+            <div style={{ 
+              width: 48, height: 48, borderRadius: 12, background: '#fff', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              overflow: 'hidden', padding: 4, boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}>
+              <img src="https://colagoa.com/wp-content/uploads/2022/04/logo.jpg" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+            <span style={{ color: '#fff', fontSize: 26, fontWeight: 800, letterSpacing: '-0.025em' }}>Cola Goa Beach Resort</span>
           </div>
 
           {/* Main Copy */}
@@ -111,8 +118,9 @@ function LoginForm() {
               System Operational: v4.2.0
             </div>
             <div style={{ display: 'flex', gap: 24, fontSize: 13, color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>
-              <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
-              <span style={{ cursor: 'pointer' }}>Terms of Service</span>
+              <Link href="/privacy" style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none' }}>Privacy Policy</Link>
+              <Link href="/terms" style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none' }}>Terms of Service</Link>
+              <Link href="/cookies" style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none' }}>Cookies</Link>
             </div>
           </div>
         </div>
@@ -169,13 +177,21 @@ function LoginForm() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
+                    suppressHydrationWarning
                     style={{
-                      width: '100%', height: 42, paddingLeft: 42, paddingRight: 16,
-                      background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8,
-                      fontSize: 14, color: '#0f172a', transition: 'border-color 0.2s', outline: 'none'
+                      width: '100%', height: 44, paddingLeft: 42, paddingRight: 16,
+                      background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: 10,
+                      fontSize: 14, color: '#0f172a', transition: 'all 0.2s', outline: 'none',
+                      boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.03)'
                     }}
-                    onFocus={e => e.target.style.borderColor = '#0ea5e9'}
-                    onBlur={e => e.target.style.borderColor = '#cbd5e1'}
+                    onFocus={e => {
+                      e.target.style.borderColor = '#0ea5e9';
+                      e.target.style.boxShadow = '0 0 0 4px rgba(14,165,233,0.1)';
+                    }}
+                    onBlur={e => {
+                      e.target.style.borderColor = '#cbd5e1';
+                      e.target.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.03)';
+                    }}
                   />
                 </div>
               </div>
@@ -193,13 +209,21 @@ function LoginForm() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
+                    suppressHydrationWarning
                     style={{
-                      width: '100%', height: 42, paddingLeft: 42, paddingRight: 16,
-                      background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8,
-                      fontSize: 14, color: '#0f172a', transition: 'border-color 0.2s', outline: 'none'
+                      width: '100%', height: 44, paddingLeft: 42, paddingRight: 16,
+                      background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: 10,
+                      fontSize: 14, color: '#0f172a', transition: 'all 0.2s', outline: 'none',
+                      boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.03)'
                     }}
-                    onFocus={e => e.target.style.borderColor = '#0ea5e9'}
-                    onBlur={e => e.target.style.borderColor = '#cbd5e1'}
+                    onFocus={e => {
+                      e.target.style.borderColor = '#0ea5e9';
+                      e.target.style.boxShadow = '0 0 0 4px rgba(14,165,233,0.1)';
+                    }}
+                    onBlur={e => {
+                      e.target.style.borderColor = '#cbd5e1';
+                      e.target.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.03)';
+                    }}
                   />
                 </div>
               </div>
@@ -212,11 +236,12 @@ function LoginForm() {
               <button
                 type="submit"
                 disabled={loading}
+                suppressHydrationWarning
                 style={{
-                  width: '100%', height: 44, background: '#0ea5e9', color: '#fff',
-                  border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700,
-                  cursor: loading ? 'not-allowed' : 'pointer', marginTop: 4,
-                  boxShadow: '0 4px 12px rgba(14,165,233,0.3)', transition: 'background 0.2s'
+                  width: '100%', height: 46, background: '#0ea5e9', color: '#fff',
+                  border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700,
+                  cursor: loading ? 'not-allowed' : 'pointer', marginTop: 8,
+                  boxShadow: '0 4px 14px rgba(14,165,233,0.4)', transition: 'all 0.2s'
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = '#0284c7'}
                 onMouseLeave={e => e.currentTarget.style.background = '#0ea5e9'}
@@ -238,7 +263,7 @@ function LoginForm() {
           </div>
 
           <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: 11, lineHeight: 1.5, maxWidth: 360, margin: '16px auto 0' }}>
-            Unauthorized access attempt is logged with IP tracking. By logging in, you agree to our <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>Information Security Policy</span>.
+            Unauthorized access attempt is logged with IP tracking. By logging in, you agree to our <Link href="/terms" style={{ color: 'inherit' }}>Terms & Conditions</Link> and <Link href="/privacy" style={{ color: 'inherit' }}>Privacy Policy</Link>.
           </p>
           <p style={{ textAlign: 'center', marginTop: 6, color: '#cbd5e1', fontSize: 10 }}>Dev info: admin@colagoa.com / admin123</p>
         </div>

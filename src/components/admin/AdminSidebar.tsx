@@ -51,16 +51,23 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'var(--accent)',
+            width: 44, height: 44, borderRadius: 8,
+            background: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
+            overflow: 'hidden',
+            padding: 4,
+            boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
           }}>
-            <Hotel size={18} color="#fff" />
+            <img 
+              src="https://colagoa.com/wp-content/uploads/2022/04/logo.jpg" 
+              alt="Logo" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+            />
           </div>
           <div>
-            <div style={{ color: '#fff', fontWeight: 700, fontSize: 15, lineHeight: 1.2 }}>Cola Goa</div>
-            <div style={{ color: '#475569', fontSize: 11, fontWeight: 500 }}>Resort CRM</div>
+            <div style={{ color: '#fff', fontWeight: 800, fontSize: 16, lineHeight: 1.1, letterSpacing: '-0.02em' }}>Cola Goa</div>
+            <div style={{ color: '#94a3b8', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2 }}>Resort CRM</div>
           </div>
         </div>
         {/* Close button — only visible on mobile via CSS */}
@@ -113,6 +120,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       <div style={{ padding: '14px 10px', borderTop: '1px solid #1e293b' }}>
         <button
           onClick={handleLogout}
+          suppressHydrationWarning
           style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 10,
             padding: '9px 10px', borderRadius: 10, background: 'transparent',

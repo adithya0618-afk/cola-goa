@@ -151,14 +151,24 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
                 suppressHydrationWarning
                 onClick={(e) => { e.stopPropagation(); setEditRoom(room); }}
                 style={{
-                  position: 'absolute', top: 12, left: 12,
-                  background: '#fff', border: 'none', borderRadius: '50%',
-                  width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  position: 'absolute', bottom: 12, right: 12,
+                  background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: 8,
+                  width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)', cursor: 'pointer', zIndex: 2,
-                  color: '#64748b'
+                  color: cfg.accentColor,
+                  backdropFilter: 'blur(4px)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = '#fff';
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.9)';
+                  e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
-                <Pencil size={14} />
+                <Pencil size={15} />
               </button>
 
               {/* Status dot */}
@@ -172,11 +182,11 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
 
               <Icon size={24} color={cfg.accentColor} style={{ marginBottom: 10 }} />
 
-              <div style={{ fontSize: 22, fontWeight: 900, color: cfg.textColor, lineHeight: 1 }}>
-                {room.roomNumber}
-              </div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: cfg.textColor, opacity: 0.7, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: cfg.textColor, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>
                 Room
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: cfg.textColor, lineHeight: 1 }}>
+                {room.roomNumber}
               </div>
 
               <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${cfg.border}` }}>
