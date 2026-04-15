@@ -536,3 +536,20 @@ Custom React hooks start with `use` — they encapsulate shared `useState + useE
 - `useAuth.ts` → checks login state, returns user
 - `useBookings.ts` → fetches bookings, returns `{ data, loading, error }`
 - **Rule:** If same logic is in 2+ pages → extract to a hook!
+
+////////////////////////////////////
+
+# Used by Drizzle to run migrations
+DATABASE_URL="postgresql://postgres:Colagoa%40123@db.jlkpuyuxsdaaatbcgvap.supabase.co:5432/postgres"
+
+# Used if you use the Supabase JS Client in your Next.js frontend
+NEXT_PUBLIC_SUPABASE_URL="https://jlkpuyuxsdaaatbcgvap.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsa3B1eXV4c2RhYWF0YmNndmFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzEwMDgsImV4cCI6MjA5MTQwNzAwOH0.Da0phfL1kcgnWysO5OP0Etlo8MpNht1nHFAEei5VbHg"
+
+# JWT Secret for admin authentication
+JWT_SECRET="cola_goa_jwt_super_secret_change_in_production_2025"
+
+# App URL (for guest links)
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+///////////////////////////////////////////
