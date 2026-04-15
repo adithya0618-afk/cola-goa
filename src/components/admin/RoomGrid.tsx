@@ -76,6 +76,7 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
           {filterOptions.map(opt => (
             <button
               key={opt}
+              suppressHydrationWarning
               onClick={() => setFilter(opt)}
               style={{
                 padding: '7px 16px', borderRadius: 99, fontSize: 13, fontWeight: 600,

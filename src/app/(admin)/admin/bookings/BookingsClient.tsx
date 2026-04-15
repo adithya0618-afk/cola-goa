@@ -108,6 +108,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
           {['all', 'booked', 'checked_in', 'checked_out', 'cancelled'].map(s => (
             <button
               key={s}
+              suppressHydrationWarning
               onClick={() => setStatusFilter(s)}
               className="btn btn-outline btn-sm"
               style={{

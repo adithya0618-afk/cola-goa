@@ -84,6 +84,7 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
         {['all', 'pending', 'accepted', 'completed', 'rejected'].map(s => (
           <button
             key={s}
+            suppressHydrationWarning
             onClick={() => setFilter(s)}
             className="btn btn-outline btn-sm"
             style={{

@@ -60,7 +60,7 @@ export default function PaymentsClient({ payments }: { payments: Payment[] }) {
         </div>
         <div className="filter-pills">
           {['all', 'success', 'pending', 'failed'].map(s => (
-            <button key={s} onClick={() => setFilter(s)} className="btn btn-outline btn-sm"
+            <button key={s} suppressHydrationWarning onClick={() => setFilter(s)} className="btn btn-outline btn-sm"
               style={{ background: filter === s ? 'var(--accent)' : undefined, color: filter === s ? '#fff' : undefined, borderColor: filter === s ? 'var(--accent)' : undefined }}>
               {s.charAt(0).toUpperCase() + s.slice(1)}
             </button>

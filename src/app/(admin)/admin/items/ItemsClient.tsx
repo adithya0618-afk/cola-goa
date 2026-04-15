@@ -95,7 +95,7 @@ export default function ItemsClient({ items }: { items: Item[] }) {
         </div>
         <div className="filter-pills">
           {['all', 'food', 'service'].map(t => (
-            <button key={t} onClick={() => setTypeFilter(t)} className="btn btn-outline btn-sm"
+            <button key={t} suppressHydrationWarning onClick={() => setTypeFilter(t)} className="btn btn-outline btn-sm"
               style={{ background: typeFilter === t ? 'var(--accent)' : undefined, color: typeFilter === t ? '#fff' : undefined, borderColor: typeFilter === t ? 'var(--accent)' : undefined }}>
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
