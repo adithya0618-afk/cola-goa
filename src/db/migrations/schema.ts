@@ -83,7 +83,7 @@ export const users = pgTable("users", {
 export const rooms = pgTable("rooms", {
     id: serial("id").primaryKey(),
 
-    roomNumber: integer("room_number").notNull().unique(),
+    roomNumber: text("room_number").notNull().unique(),
     pricePerNight: numeric("price_per_night").notNull(),
     capacity: integer("capacity"),
 

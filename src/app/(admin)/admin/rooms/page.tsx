@@ -31,14 +31,14 @@ export default async function RoomsPage() {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <div className="page-header" style={{ marginBottom: 28 }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800 }}>Room Management</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
             Click a green room to create a new booking. Blocked rooms cannot be booked.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
+        <div className="rooms-header-stats" style={{ display: 'flex', gap: 12 }}>
           {[
             { label: 'Total', value: counts.total, color: 'var(--accent)', bg: 'var(--accent-light)' },
             { label: 'Available', value: counts.available, color: '#10b981', bg: '#d1fae5' },

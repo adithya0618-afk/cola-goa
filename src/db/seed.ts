@@ -11,19 +11,19 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool);
 
 const ROOMS = [
-  { roomNumber: 101, pricePerNight: '3500', capacity: 2 },
-  { roomNumber: 102, pricePerNight: '3500', capacity: 2 },
-  { roomNumber: 103, pricePerNight: '4000', capacity: 3 },
-  { roomNumber: 104, pricePerNight: '4000', capacity: 3 },
-  { roomNumber: 105, pricePerNight: '4500', capacity: 2 },
-  { roomNumber: 201, pricePerNight: '5000', capacity: 4 },
-  { roomNumber: 202, pricePerNight: '5000', capacity: 4 },
-  { roomNumber: 203, pricePerNight: '5500', capacity: 2 },
-  { roomNumber: 204, pricePerNight: '5500', capacity: 2 },
-  { roomNumber: 205, pricePerNight: '6000', capacity: 4 },
-  { roomNumber: 301, pricePerNight: '8000', capacity: 2 },
-  { roomNumber: 302, pricePerNight: '8000', capacity: 2 },
-  { roomNumber: 303, pricePerNight: '12000', capacity: 4 },
+  { roomNumber: '111', pricePerNight: '3500', capacity: 2 },
+  { roomNumber: '222', pricePerNight: '3500', capacity: 2 },
+  { roomNumber: '333', pricePerNight: '4000', capacity: 3 },
+  { roomNumber: '444', pricePerNight: '4000', capacity: 3 },
+  { roomNumber: '555', pricePerNight: '4500', capacity: 2 },
+  { roomNumber: '666', pricePerNight: '5000', capacity: 4 },
+  { roomNumber: '777', pricePerNight: '5000', capacity: 4 },
+  { roomNumber: '888', pricePerNight: '5500', capacity: 2 },
+  { roomNumber: '999', pricePerNight: '5500', capacity: 2 },
+  { roomNumber: 'A5', pricePerNight: '6000', capacity: 4 },
+  { roomNumber: 'A6', pricePerNight: '8000', capacity: 2 },
+  { roomNumber: 'A7', pricePerNight: '8000', capacity: 2 },
+  { roomNumber: 'A8', pricePerNight: '12000', capacity: 4 },
 ];
 
 const ITEMS = [

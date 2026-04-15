@@ -8,7 +8,7 @@ import { Pencil } from 'lucide-react';
 
 interface Room {
   id: number;
-  roomNumber: number;
+  roomNumber: string;
   pricePerNight: string;
   capacity: number | null;
   status: 'available' | 'occupied' | 'maintenance';
@@ -148,6 +148,7 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
             >
               {/* Edit Icon */}
               <button
+                suppressHydrationWarning
                 onClick={(e) => { e.stopPropagation(); setEditRoom(room); }}
                 style={{
                   position: 'absolute', top: 12, left: 12,
