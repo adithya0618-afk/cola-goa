@@ -12,19 +12,25 @@ import {
   CreditCard,
   LogOut,
   Hotel,
+  X,
 } from 'lucide-react';
 
 const navItems = [
-  { href: '/admin/dashboard', label: 'Dashboard',  icon: LayoutDashboard },
-  { href: '/admin/rooms',     label: 'Rooms',       icon: BedDouble },
-  { href: '/admin/bookings',  label: 'Bookings',    icon: CalendarCheck },
-  { href: '/admin/orders',    label: 'Orders',      icon: ShoppingCart },
-  { href: '/admin/items',     label: 'Menu / Items',icon: UtensilsCrossed },
-  { href: '/admin/staff',     label: 'Staff',       icon: Users },
-  { href: '/admin/payments',  label: 'Payments',    icon: CreditCard },
+  { href: '/admin/dashboard', label: 'Dashboard',   icon: LayoutDashboard },
+  { href: '/admin/rooms',     label: 'Rooms',        icon: BedDouble },
+  { href: '/admin/bookings',  label: 'Bookings',     icon: CalendarCheck },
+  { href: '/admin/orders',    label: 'Orders',       icon: ShoppingCart },
+  { href: '/admin/items',     label: 'Menu / Items', icon: UtensilsCrossed },
+  { href: '/admin/staff',     label: 'Staff',        icon: Users },
+  { href: '/admin/payments',  label: 'Payments',     icon: CreditCard },
 ];
 
-export default function AdminSidebar() {
+interface AdminSidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
   async function handleLogout() {
@@ -33,35 +39,43 @@ export default function AdminSidebar() {
   }
 
   return (
-    <aside style={{
-      width: 240,
-      minWidth: 240,
-      background: 'var(--sidebar-bg)',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      position: 'relative',
-      zIndex: 10,
-    }}>
-      {/* Logo */}
+    <aside className={`admin-sidebar ${isOpen ? 'open' : ''}`}>
+      {/* Logo + mobile close */}
       <div style={{
-        padding: '24px 20px 20px',
+        padding: '20px 16px',
         borderBottom: '1px solid #1e293b',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
         gap: 10,
       }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 10,
-          background: 'var(--accent)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Hotel size={18} color="#fff" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: 'var(--accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            <Hotel size={18} color="#fff" />
+          </div>
+          <div>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: 15, lineHeight: 1.2 }}>Cola Goa</div>
+            <div style={{ color: '#475569', fontSize: 11, fontWeight: 500 }}>Resort CRM</div>
+          </div>
         </div>
-        <div>
-          <div style={{ color: '#fff', fontWeight: 700, fontSize: 15, lineHeight: 1.2 }}>Cola Goa</div>
-          <div style={{ color: '#475569', fontSize: 11, fontWeight: 500 }}>Resort CRM</div>
-        </div>
+        {/* Close button — only visible on mobile via CSS */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: '#64748b', display: 'none', padding: 4,
+            }}
+            className="sidebar-close-btn"
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -72,7 +86,7 @@ export default function AdminSidebar() {
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/');
           return (
-            <Link key={href} href={href} style={{ textDecoration: 'none' }}>
+            <Link key={href} href={href} style={{ textDecoration: 'none' }} onClick={onClose}>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '9px 10px', borderRadius: 10, marginBottom: 2,

@@ -32,13 +32,13 @@ export default function PaymentsClient({ payments }: { payments: Payment[] }) {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ marginBottom: 24 }}>
+      <div className="page-header" style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800 }}>Payment Tracking</h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>Track all transactions and payment statuses</p>
       </div>
 
       {/* Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16, marginBottom: 24 }}>
+      <div className="stat-grid">
         {[
           { label: 'Total Collected', value: `₹${total.toLocaleString('en-IN')}`, bg: '#d1fae5', color: '#065f46' },
           { label: 'Total Transactions', value: payments.length, bg: 'var(--accent-light)', color: 'var(--accent-dark)' },
@@ -53,12 +53,12 @@ export default function PaymentsClient({ payments }: { payments: Payment[] }) {
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+      <div className="filter-row">
         <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
           <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
           <input className="input" placeholder="Search by guest or reference..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 34 }} />
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div className="filter-pills">
           {['all', 'success', 'pending', 'failed'].map(s => (
             <button key={s} onClick={() => setFilter(s)} className="btn btn-outline btn-sm"
               style={{ background: filter === s ? 'var(--accent)' : undefined, color: filter === s ? '#fff' : undefined, borderColor: filter === s ? 'var(--accent)' : undefined }}>
@@ -75,6 +75,7 @@ export default function PaymentsClient({ payments }: { payments: Payment[] }) {
             No payments found
           </div>
         ) : (
+          <div className="table-wrapper">
           <table className="data-table">
             <thead>
               <tr>
@@ -101,6 +102,7 @@ export default function PaymentsClient({ payments }: { payments: Payment[] }) {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

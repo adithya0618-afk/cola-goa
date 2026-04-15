@@ -5,7 +5,7 @@ import { X, User, Phone, Mail, Calendar, CreditCard, CheckCircle, Loader } from 
 
 interface Room {
   id: number;
-  roomNumber: number;
+  roomNumber: string;
   pricePerNight: string;
   capacity: number | null;
   status: 'available' | 'occupied' | 'maintenance';
@@ -63,7 +63,6 @@ export default function BookingModal({ room, onClose, onSuccess }: BookingModalP
       if (!res.ok) throw new Error(data.error || 'Booking failed');
       setCreated({ id: data.booking.id, guestToken: data.booking.guestToken });
       setStep('done');
-      onSuccess();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed');
     } finally {
@@ -89,7 +88,7 @@ export default function BookingModal({ room, onClose, onSuccess }: BookingModalP
               ₹{Number(room.pricePerNight).toLocaleString('en-IN')} / night · Capacity: {room.capacity ?? 2}
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+          <button onClick={() => { if (step === 'done') onSuccess(); onClose(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
             <X size={20} color="var(--text-secondary)" />
           </button>
         </div>
@@ -280,7 +279,7 @@ export default function BookingModal({ room, onClose, onSuccess }: BookingModalP
               }}>
                 📱 Guest link will be shared via WhatsApp/Email automatically.
               </div>
-              <button className="btn btn-primary" onClick={onClose} style={{ width: '100%', justifyContent: 'center' }}>
+              <button className="btn btn-primary" onClick={() => { onSuccess(); onClose(); }} style={{ width: '100%', justifyContent: 'center' }}>
                 Done
               </button>
             </div>

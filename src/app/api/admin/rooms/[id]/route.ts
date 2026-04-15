@@ -18,7 +18,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     let activeBooking = null;
     let guestUser = null;
     let roomOrders: any[] = [];
-
     if (room.status === 'occupied') {
       const activeBookings = await db
         .select()
@@ -93,7 +92,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     // 2. Update guest details directly in active booking
     if (action === 'update_guest') {
-      const { bookingId, userId, name, phone, email } = payload;
+      const { bookingId, userId, name, phone, email, checkInDate, checkOutDate } = payload;
       
       if (userId) {
         // Run update query on users table
@@ -102,7 +101,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           .where(eq(users.id, userId));
           
         await db.update(bookings)
-          .set({ name }) // sync name cache
+          .set({ name, checkInDate, checkOutDate }) // sync name cache
           .where(eq(bookings.id, bookingId));
       }
 

@@ -56,7 +56,7 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <div className="page-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <h1 style={{ fontSize: 24, fontWeight: 800 }}>Service & Food Orders</h1>
@@ -80,7 +80,7 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+      <div className="filter-pills" style={{ marginBottom: 20 }}>
         {['all', 'pending', 'accepted', 'completed', 'rejected'].map(s => (
           <button
             key={s}

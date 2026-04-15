@@ -80,7 +80,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
 
   return (
     <div className="animate-fade-in">
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="page-header">
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800 }}>Bookings</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
@@ -93,7 +93,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+      <div className="filter-row">
         <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
           <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
           <input
@@ -104,7 +104,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
             style={{ paddingLeft: 34 }}
           />
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div className="filter-pills">
           {['all', 'booked', 'checked_in', 'checked_out', 'cancelled'].map(s => (
             <button
               key={s}
@@ -124,6 +124,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
 
       {/* Table */}
       <div className="card" style={{ overflow: 'hidden' }}>
+        <div className="table-wrapper">
         <table className="data-table">
           <thead>
             <tr>
@@ -195,6 +196,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Checkout Invoice Modal */}

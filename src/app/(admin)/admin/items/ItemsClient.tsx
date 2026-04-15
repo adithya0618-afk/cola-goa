@@ -77,7 +77,7 @@ export default function ItemsClient({ items }: { items: Item[] }) {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="page-header" style={{ marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800 }}>Menu & Items</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
@@ -88,12 +88,12 @@ export default function ItemsClient({ items }: { items: Item[] }) {
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+      <div className="filter-row">
         <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
           <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
           <input className="input" placeholder="Search items..." value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 34 }} />
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div className="filter-pills">
           {['all', 'food', 'service'].map(t => (
             <button key={t} onClick={() => setTypeFilter(t)} className="btn btn-outline btn-sm"
               style={{ background: typeFilter === t ? 'var(--accent)' : undefined, color: typeFilter === t ? '#fff' : undefined, borderColor: typeFilter === t ? 'var(--accent)' : undefined }}>

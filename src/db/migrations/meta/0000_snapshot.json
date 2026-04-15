@@ -1,5 +1,5 @@
 {
-  "id": "9371dcd0-951b-40cd-8eaa-446602da7497",
+  "id": "0310e74f-3c6c-490a-a97e-00369c24227b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -468,7 +468,7 @@
         },
         "room_number": {
           "name": "room_number",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },

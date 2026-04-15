@@ -103,15 +103,17 @@ export default async function DashboardPage() {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Dashboard Overview</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
-          Welcome back! Here is what's happening at Cola Goa Resort.
-        </p>
+      <div className="page-header" style={{ marginBottom: 28 }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Dashboard Overview</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
+            Welcome back! Here is what&#39;s happening at Cola Goa Resort.
+          </p>
+        </div>
       </div>
 
       {/* Stat Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16, marginBottom: 28 }}>
+      <div className="stat-grid">
         {statCards.map(({ label, value, icon: Icon, color, bg }) => (
           <div key={label} className="card" style={{ padding: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -130,7 +132,7 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20 }}>
+      <div className="dashboard-bottom" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20 }}>
         {/* Recent Bookings */}
         <div className="card" style={{ overflow: 'hidden' }}>
           <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -139,6 +141,7 @@ export default async function DashboardPage() {
               View all →
             </Link>
           </div>
+          <div className="table-wrapper">
           <table className="data-table">
             <thead>
               <tr>
@@ -165,6 +168,7 @@ export default async function DashboardPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* Occupancy Card */}

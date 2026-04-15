@@ -54,9 +54,8 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleSuccess = useCallback(() => {
-    setRefreshKey(k => k + 1);
-    // Trigger a page refresh to update room statuses
-    setTimeout(() => window.location.reload(), 1500);
+    // Just refresh the whole page immediately
+    window.location.reload();
   }, []);
 
   const filterOptions = ['All', 'Available', 'Occupied', 'Maintenance'] as const;

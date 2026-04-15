@@ -14,6 +14,7 @@ interface EditRoomModalProps {
 export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModalProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
   
   // Data State
   const [roomData, setRoomData] = useState<any>(null);
@@ -29,6 +30,8 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
+  const [checkInDate, setCheckInDate] = useState('');
+  const [checkOutDate, setCheckOutDate] = useState('');
 
   useEffect(() => {
     fetchRoomDetails();
@@ -48,6 +51,10 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
         setGuestName(data.guestUser.name || '');
         setGuestPhone(data.guestUser.phone || '');
         setGuestEmail(data.guestUser.email || '');
+      }
+      if (data.activeBooking) {
+        setCheckInDate(data.activeBooking.checkInDate || '');
+        setCheckOutDate(data.activeBooking.checkOutDate || '');
       }
       setLoading(false);
     } catch (err) {
@@ -88,13 +95,15 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
             userId: guestUser.id, 
             name: guestName, 
             phone: guestPhone, 
-            email: guestEmail 
+            email: guestEmail,
+            checkInDate,
+            checkOutDate
           }
         })
       });
-      onSuccess(); // Triggers refresh to show new name in UI
       setSaving(false);
-      alert('Guest details updated successfully.');
+      setSuccessMsg('Guest details updated successfully.');
+      setTimeout(() => setSuccessMsg(''), 3500);
     } catch (e) {
       console.error(e);
       setSaving(false);
@@ -229,7 +238,7 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
 
   return (
     <div className="overlay" onClick={onClose}>
-      <div className="modal animate-fade-in" style={{ maxWidth: 520 }} onClick={e => e.stopPropagation()}>
+      <div className="modal animate-fade-in" style={{ maxWidth: 640 }} onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div style={{
           padding: '22px 28px', borderBottom: '1px solid var(--border)',
@@ -248,13 +257,27 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
           </button>
         </div>
 
-        <div style={{ padding: '24px 28px' }}>
+        <div style={{ padding: '20px 28px' }}>
+          {successMsg && (
+            <div 
+              className="animate-slide-in"
+              style={{ 
+                background: '#d1fae5', color: '#065f46', 
+                padding: '12px 16px', borderRadius: 10, 
+                marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10,
+                fontSize: 14, fontWeight: 600, border: '1px solid #34d399'
+              }}
+            >
+              <CheckCircle2 size={18} />
+              {successMsg}
+            </div>
+          )}
           {loading ? (
             <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
               Loading securely...
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               
               {/* IF OCCUPIED: Guest Details */}
               {activeBooking && (
@@ -298,6 +321,26 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
                           style={{ paddingLeft: 34 }} 
                         />
                       </div>
+                    </div>
+
+                    <div className="field">
+                      <label className="label">Check-In Date</label>
+                      <input 
+                        className="input" 
+                        type="date" 
+                        value={checkInDate} 
+                        onChange={e => setCheckInDate(e.target.value)} 
+                      />
+                    </div>
+
+                    <div className="field">
+                      <label className="label">Check-Out Date</label>
+                      <input 
+                        className="input" 
+                        type="date" 
+                        value={checkOutDate} 
+                        onChange={e => setCheckOutDate(e.target.value)} 
+                      />
                     </div>
                   </div>
 

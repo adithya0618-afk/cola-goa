@@ -66,7 +66,7 @@ CREATE TABLE "payments" (
 --> statement-breakpoint
 CREATE TABLE "rooms" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"room_number" integer NOT NULL,
+	"room_number" text NOT NULL,
 	"price_per_night" numeric NOT NULL,
 	"capacity" integer,
 	"status" "room_status" DEFAULT 'available',

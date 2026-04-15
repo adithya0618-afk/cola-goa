@@ -68,7 +68,7 @@ export default function StaffClient({ staff }: { staff: Staff[] }) {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="page-header" style={{ marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800 }}>Staff Management</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>{list.length} staff members</p>
