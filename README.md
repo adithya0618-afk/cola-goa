@@ -553,3 +553,5 @@ JWT_SECRET="cola_goa_jwt_super_secret_change_in_production_2025"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
 ///////////////////////////////////////////
+
+Rajesh run this to get a preview of the database - npm run db:studio
