@@ -3,6 +3,8 @@ import db from '@/lib/db';
 import { rooms, bookings, users, orders, orderItems, items } from '@/db/migrations/schema';
 import { eq, desc, inArray } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;

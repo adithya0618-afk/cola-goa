@@ -5,6 +5,8 @@ import { eq, and, or, gte, lte } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { sql } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const result = await db.select().from(bookings).orderBy(sql`created_at DESC`);

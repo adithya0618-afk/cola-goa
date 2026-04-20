@@ -4,6 +4,8 @@ import db from '@/lib/db';
 import { staff } from '@/db/migrations/schema';
 import { sql, eq } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const result = await db.select({
