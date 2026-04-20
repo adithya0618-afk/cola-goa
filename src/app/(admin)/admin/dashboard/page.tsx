@@ -4,6 +4,8 @@ import { rooms, bookings, payments, staff, orders } from '@/db/migrations/schema
 import { eq, and, sql, ne, count } from 'drizzle-orm';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 async function getDashboardStats() {
   try {
     const [

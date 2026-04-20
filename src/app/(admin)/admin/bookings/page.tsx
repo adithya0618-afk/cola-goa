@@ -3,6 +3,8 @@ import { bookings, rooms } from '@/db/migrations/schema';
 import { sql } from 'drizzle-orm';
 import BookingsClient from './BookingsClient';
 
+export const dynamic = 'force-dynamic';
+
 async function getBookings() {
   try {
     return await db.select({

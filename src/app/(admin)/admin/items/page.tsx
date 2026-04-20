@@ -3,6 +3,8 @@ import { items } from '@/db/migrations/schema';
 import { sql } from 'drizzle-orm';
 import ItemsClient from './ItemsClient';
 
+export const dynamic = 'force-dynamic';
+
 async function getItems() {
   try { return await db.select().from(items).orderBy(sql`created_at DESC`); }
   catch { return []; }

@@ -3,6 +3,8 @@ import { rooms } from '@/db/migrations/schema';
 import RoomGrid from '@/components/admin/RoomGrid';
 import { BedDouble } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 async function getRooms() {
   try {
     return await db.select().from(rooms).orderBy(rooms.roomNumber);

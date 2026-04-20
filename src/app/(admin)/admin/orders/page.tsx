@@ -3,6 +3,8 @@ import { orders, bookings, rooms, orderItems, items } from '@/db/migrations/sche
 import { sql, eq } from 'drizzle-orm';
 import OrdersClient from './OrdersClient';
 
+export const dynamic = 'force-dynamic';
+
 async function getOrders() {
   try {
     const result = await db

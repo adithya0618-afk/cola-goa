@@ -3,6 +3,8 @@ import { staff } from '@/db/migrations/schema';
 import { sql } from 'drizzle-orm';
 import StaffClient from './StaffClient';
 
+export const dynamic = 'force-dynamic';
+
 async function getStaff() {
   try { return await db.select({ id: staff.id, name: staff.name, role: staff.role, shift: staff.shift, email: staff.email, phone: staff.phone }).from(staff).orderBy(sql`created_at DESC`); }
   catch { return []; }
