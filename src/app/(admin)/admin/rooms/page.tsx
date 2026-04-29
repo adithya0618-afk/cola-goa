@@ -1,5 +1,5 @@
 import db from '@/lib/db';
-import { rooms } from '@/db/migrations/schema';
+import { rooms } from '@/db/schema';
 import RoomGrid from '@/components/admin/RoomGrid';
 import { BedDouble } from 'lucide-react';
 

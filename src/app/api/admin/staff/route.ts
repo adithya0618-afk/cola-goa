@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import bcrypt from 'bcryptjs';
 import db from '@/lib/db';
-import { staff } from '@/db/migrations/schema';
+import { staff } from '@/db/schema';
 import { sql, eq } from 'drizzle-orm';
 
 export async function GET() {

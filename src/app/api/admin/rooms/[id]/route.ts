@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { rooms, bookings, users, orders, orderItems, items } from '@/db/migrations/schema';
+import { rooms, bookings, users, orders, orderItems, items } from '@/db/schema';
 import { eq, desc, inArray } from 'drizzle-orm';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {

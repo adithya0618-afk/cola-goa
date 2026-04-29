@@ -1,5 +1,5 @@
 import db from '@/lib/db';
-import { orders, bookings, rooms, orderItems, items } from '@/db/migrations/schema';
+import { orders, bookings, rooms, orderItems, items } from '@/db/schema';
 import { sql, eq } from 'drizzle-orm';
 import OrdersClient from './OrdersClient';
 

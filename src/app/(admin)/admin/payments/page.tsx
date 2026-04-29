@@ -1,5 +1,5 @@
 import db from '@/lib/db';
-import { payments, bookings } from '@/db/migrations/schema';
+import { payments, bookings } from '@/db/schema';
 import { sql, eq } from 'drizzle-orm';
 import PaymentsClient from './PaymentsClient';
 

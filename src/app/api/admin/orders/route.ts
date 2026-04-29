@@ -1,14 +1,38 @@
 import { NextRequest } from 'next/server';
 import db from '@/lib/db';
-import { orders, bookings, rooms } from '@/db/migrations/schema';
-import { eq } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
+import { orders, orderItems } from '@/db/schema';
 
-export async function GET() {
+export async function POST(req: NextRequest) {
   try {
-    const result = await db.select().from(orders).orderBy(sql`created_at DESC`);
-    return Response.json(result);
-  } catch {
-    return Response.json({ error: 'DB error' }, { status: 500 });
+    const body = await req.json();
+    console.log("ORDER BODY:", body); // 👈 DEBUG
+
+    const { items, totalAmount, roomId, bookingId } = body;
+
+    if (!items || items.length === 0) {
+      return Response.json({ error: 'No items' }, { status: 400 });
+    }
+    
+    const [order] = await db.insert(orders).values({
+      roomId,
+      bookingId,
+      status: 'pending',
+      totalAmount: totalAmount.toString(),
+    }).returning();
+
+    await db.insert(orderItems).values(
+      items.map((i: any) => ({
+        orderId: order.id,
+        itemId: i.id,
+        quantity: i.qty,
+        price: i.price.toString(),
+      }))
+    );
+
+    return Response.json({ order });
+
+  } catch (e) {
+    console.error("ORDER ERROR:", e); // 👈 VERY IMPORTANT
+    return Response.json({ error: 'Order failed' }, { status: 500 });
   }
 }

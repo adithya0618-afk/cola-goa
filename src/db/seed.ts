@@ -5,7 +5,7 @@ import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
-import { rooms, staff, items, users } from './migrations/schema';
+import { rooms, staff, items, users } from './schema';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool);

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import db from '@/lib/db';
-import { staff } from '@/db/migrations/schema';
+import { staff } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function PUT(

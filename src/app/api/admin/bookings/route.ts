@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import db from '@/lib/db';
-import { bookings, rooms, users } from '@/db/migrations/schema';
+import { bookings, rooms, users } from '@/db/schema';
 import { eq, and, or, gte, lte } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { sql } from 'drizzle-orm';

@@ -151,9 +151,8 @@ export const items = pgTable("items", {
 export const orders = pgTable("orders", {
     id: uuid("id").defaultRandom().primaryKey(),
 
-    bookingId: uuid("booking_id").references(() => bookings.id, {
-        onDelete: "cascade",
-    }),
+    bookingId: uuid("booking_id")
+  .references(() => bookings.id, { onDelete: "cascade" }),
 
     roomId: integer("room_id").references(() => rooms.id),
 
