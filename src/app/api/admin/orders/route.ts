@@ -3,13 +3,7 @@ import db from '@/lib/db';
 import { orders, orderItems, rooms } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
-<<<<<<< HEAD
-export const dynamic = 'force-dynamic';
-
-export async function GET() {
-=======
 export async function POST(req: NextRequest) {
->>>>>>> dev
   try {
     const body = await req.json();
     console.log("ORDER BODY:", body); // 👈 DEBUG

@@ -555,3 +555,11 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ///////////////////////////////////////////
 
 Rajesh run this to get a preview of the database - npm run db:studio
+
+Executed the Commands: I ran command line execution tools on your machine (via PowerShell inside your workspace directory) to run the scripts.
+First, I ran
+ npx dotenv -e .env.local npx tsx run-migrate.ts. This loaded your Render database connection credentials from .env.local and ran the migration programmatically.
+Next, I ran
+ npx dotenv -e .env.local npx tsx src/db/seed.ts to execute the database seeding script.
+
+ DATABASE_URL="postgresql://colapostgres_user:Q0kfdzcQd1BbdvGVBGgV4geIRGNkE4wY@dpg-d87k1fmk1jcs73b22qa0-a.ohio-postgres.render.com/colapostgres?sslmode=require"
