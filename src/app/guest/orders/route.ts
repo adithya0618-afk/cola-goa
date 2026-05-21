@@ -1,23 +1,16 @@
-import { NextRequest } from 'next/server';
-import db from '@/lib/db';
-import { orders, orderItems, rooms } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { NextRequest } from "next/server";
+import db from "@/lib/db";
+import { orders, orderItems, rooms } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
-<<<<<<< HEAD
-export const dynamic = 'force-dynamic';
-
-export async function GET() {
-=======
 export async function POST(req: NextRequest) {
->>>>>>> dev
   try {
     const body = await req.json();
-    console.log("ORDER BODY:", body); // 👈 DEBUG
 
     const { items, totalAmount, roomId, roomNumber, guestName, guestPhone, bookingId } = body;
 
     if (!items || items.length === 0) {
-      return Response.json({ error: 'No items' }, { status: 400 });
+      return Response.json({ error: "No items selected" }, { status: 400 });
     }
 
     let resolvedRoomId = roomId;
@@ -45,15 +38,18 @@ export async function POST(req: NextRequest) {
         resolvedRoomId = newRoom.id;
       }
     }
-    
-    const [order] = await db.insert(orders).values({
-      roomId: resolvedRoomId ?? null,
-      bookingId: bookingId ?? null,
-      guestName: guestName ?? null,
-      guestPhone: guestPhone ?? null,
-      status: 'pending',
-      totalAmount: totalAmount.toString(),
-    }).returning();
+
+    const [order] = await db
+      .insert(orders)
+      .values({
+        totalAmount: totalAmount.toString(),
+        roomId: resolvedRoomId ?? null,
+        bookingId: bookingId ?? null,
+        guestName: guestName ?? null,
+        guestPhone: guestPhone ?? null,
+        status: "pending",
+      })
+      .returning();
 
     await db.insert(orderItems).values(
       items.map((i: any) => ({
@@ -64,10 +60,10 @@ export async function POST(req: NextRequest) {
       }))
     );
 
-    return Response.json({ order });
+    return Response.json({ success: true, order }, { status: 201 });
 
   } catch (e) {
-    console.error("ORDER ERROR:", e); // 👈 VERY IMPORTANT
-    return Response.json({ error: 'Order failed' }, { status: 500 });
+    console.error(e);
+    return Response.json({ error: "Order failed" }, { status: 500 });
   }
 }

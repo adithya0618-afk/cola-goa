@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { NextRequest } from 'next/server';
 import db from '@/lib/db';
-import { staff } from '@/db/migrations/schema';
+import { staff } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'cola_goa_jwt_super_secret_2025';

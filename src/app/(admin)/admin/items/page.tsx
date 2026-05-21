@@ -1,5 +1,5 @@
 import db from '@/lib/db';
-import { items } from '@/db/migrations/schema';
+import { items } from '@/db/schema';
 import { sql } from 'drizzle-orm';
 import ItemsClient from './ItemsClient';
 

@@ -1,5 +1,5 @@
 import db from '@/lib/db';
-import { staff } from '@/db/migrations/schema';
+import { staff } from '@/db/schema';
 import { sql } from 'drizzle-orm';
 import StaffClient from './StaffClient';
 

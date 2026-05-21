@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import db from '@/lib/db';
-import { bookings, rooms, orders } from '@/db/migrations/schema';
+import { bookings, rooms, orders } from '@/db/schema';
 import { eq, sum } from 'drizzle-orm';
 
 export async function PATCH(

@@ -151,15 +151,19 @@ export const items = pgTable("items", {
 export const orders = pgTable("orders", {
     id: uuid("id").defaultRandom().primaryKey(),
 
-    bookingId: uuid("booking_id").references(() => bookings.id, {
-        onDelete: "cascade",
-    }),
+    bookingId: uuid("booking_id")
+  .references(() => bookings.id, { onDelete: "cascade" }),
 
     roomId: integer("room_id").references(() => rooms.id),
+
+    guestName: text("guest_name"),
+    guestPhone: text("guest_phone"),
 
     status: orderStatusEnum("status").default("pending"),
 
     totalAmount: numeric("total_amount").default("0"),
+
+    isSeen: boolean("is_seen").default(false).notNull(),
 
     createdAt: timestamp("created_at").defaultNow(),
 });
