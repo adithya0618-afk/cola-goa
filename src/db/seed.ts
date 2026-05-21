@@ -81,7 +81,7 @@ async function seed() {
 
   // Seed default admin
   console.log('\nCreating default admin user...');
-  const hashedPassword = await bcrypt.hash('admin123', 12);
+  const hashedPassword = "$2a$12$QgcSvWbUqis6CpxcjJcKqeLrQ694074bTEL4j1CPlOBrz/A6ABD4e";
   try {
     await db.insert(staff).values({
       name: 'Admin User',

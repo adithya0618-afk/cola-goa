@@ -1,27 +1,64 @@
 import { NextRequest } from "next/server";
 import db from "@/lib/db";
-import { orders } from "@/db/schema";
+import { orders, orderItems, rooms } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const { items, totalAmount, roomId, bookingId } = body;
+    const { items, totalAmount, roomId, roomNumber, guestName, guestPhone, bookingId } = body;
 
     if (!items || items.length === 0) {
       return Response.json({ error: "No items selected" }, { status: 400 });
     }
 
+    let resolvedRoomId = roomId;
+
+    if (roomNumber && typeof roomNumber === "string" && roomNumber.trim() !== "") {
+      const trimmedRoom = roomNumber.trim();
+      const [existingRoom] = await db
+        .select()
+        .from(rooms)
+        .where(eq(rooms.roomNumber, trimmedRoom))
+        .limit(1);
+
+      if (existingRoom) {
+        resolvedRoomId = existingRoom.id;
+      } else {
+        // Create new room dynamically
+        const [newRoom] = await db
+          .insert(rooms)
+          .values({
+            roomNumber: trimmedRoom,
+            pricePerNight: "100.00",
+            status: "available",
+          })
+          .returning();
+        resolvedRoomId = newRoom.id;
+      }
+    }
+
     const [order] = await db
       .insert(orders)
       .values({
-        items: JSON.stringify(items), // store cart
         totalAmount: totalAmount.toString(),
-        roomId: roomId ?? null,
+        roomId: resolvedRoomId ?? null,
         bookingId: bookingId ?? null,
+        guestName: guestName ?? null,
+        guestPhone: guestPhone ?? null,
         status: "pending",
       })
       .returning();
+
+    await db.insert(orderItems).values(
+      items.map((i: any) => ({
+        orderId: order.id,
+        itemId: i.id,
+        quantity: i.qty,
+        price: i.price.toString(),
+      }))
+    );
 
     return Response.json({ success: true, order }, { status: 201 });
 

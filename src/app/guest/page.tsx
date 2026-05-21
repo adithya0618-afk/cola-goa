@@ -276,7 +276,10 @@ function DrinkMenuSheet({ onClose }: { onClose: () => void }) {
 }
 
 // ── Cart Sheet (Mobile) ───────────────────────────────────────────────────────
-function CartSheet({ cartItems, cartCount, cartTotal, placing, onRemoveOne, onAddOne, onPlace, onClose }: {
+function CartSheet({
+  cartItems, cartCount, cartTotal, placing, onRemoveOne, onAddOne, onPlace, onClose,
+  roomsList, roomNumber, setRoomNumber, guestName, setGuestName, guestPhone, setGuestPhone
+}: {
   cartItems: CartItem[];
   cartCount: number;
   cartTotal: number;
@@ -285,6 +288,13 @@ function CartSheet({ cartItems, cartCount, cartTotal, placing, onRemoveOne, onAd
   onAddOne: (item: CartItem) => void;
   onPlace: () => void;
   onClose: () => void;
+  roomsList: { id: number; roomNumber: string }[];
+  roomNumber: string;
+  setRoomNumber: (val: string) => void;
+  guestName: string;
+  setGuestName: (val: string) => void;
+  guestPhone: string;
+  setGuestPhone: (val: string) => void;
 }) {
   return (
     <div className="cart-sheet-overlay" onClick={onClose}>
@@ -295,7 +305,7 @@ function CartSheet({ cartItems, cartCount, cartTotal, placing, onRemoveOne, onAd
           <span style={{ fontSize: 12, color: "#9CA3AF" }}>{cartCount} {cartCount === 1 ? "item" : "items"}</span>
         </div>
 
-        <div style={{ overflowY: "auto", maxHeight: "50vh" }}>
+        <div style={{ overflowY: "auto", maxHeight: "40vh", marginBottom: 16 }}>
           {cartItems.length === 0 ? (
             <div style={{ textAlign: "center", padding: "32px 0", color: "#9CA3AF", fontSize: 13 }}>
               <div style={{ fontSize: 36, marginBottom: 10 }}>🍽️</div>
@@ -326,7 +336,86 @@ function CartSheet({ cartItems, cartCount, cartTotal, placing, onRemoveOne, onAd
         </div>
 
         {cartItems.length > 0 && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 12, borderTop: "1px solid #E5E7EB" }}>
+          <div style={{ marginBottom: 16, borderBottom: "1px solid #F3F4F6", paddingBottom: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "#4B5563", display: "block", marginBottom: 6 }}>
+                🔑 Enter Room Number
+              </label>
+              <input
+                type="text"
+                list="rooms-datalist-mobile"
+                placeholder="e.g. 104"
+                value={roomNumber}
+                onChange={(e) => setRoomNumber(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  border: "1px solid #D1D5DB",
+                  background: "#fff",
+                  fontSize: 13,
+                  fontFamily: "inherit",
+                  outline: "none",
+                  color: "#1A1A2E"
+                }}
+              />
+              <datalist id="rooms-datalist-mobile">
+                {roomsList.map((room) => (
+                  <option key={room.id} value={room.roomNumber} />
+                ))}
+              </datalist>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "#4B5563", display: "block", marginBottom: 6 }}>
+                👤 Your Name
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Jane Doe"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  border: "1px solid #D1D5DB",
+                  background: "#fff",
+                  fontSize: 13,
+                  fontFamily: "inherit",
+                  outline: "none",
+                  color: "#1A1A2E"
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: "#4B5563", display: "block", marginBottom: 6 }}>
+                📞 Phone Number
+              </label>
+              <input
+                type="tel"
+                placeholder="e.g. +91 98765 43210"
+                value={guestPhone}
+                onChange={(e) => setGuestPhone(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  border: "1px solid #D1D5DB",
+                  background: "#fff",
+                  fontSize: 13,
+                  fontFamily: "inherit",
+                  outline: "none",
+                  color: "#1A1A2E"
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {cartItems.length > 0 && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4, paddingTop: 4, marginBottom: 12 }}>
             <span style={{ fontSize: 13, color: "#6B7280" }}>Total</span>
             <strong style={{ fontSize: 19, fontWeight: 700, color: "#0B74D4" }}>₹{cartTotal.toFixed(0)}</strong>
           </div>
@@ -334,12 +423,12 @@ function CartSheet({ cartItems, cartCount, cartTotal, placing, onRemoveOne, onAd
 
         <button
           className="checkout-btn"
-          disabled={cartItems.length === 0 || placing}
+          disabled={cartItems.length === 0 || !roomNumber.trim() || !guestName.trim() || !guestPhone.trim() || placing}
           onClick={onPlace}
           style={{
             width: "100%", background: "#0B74D4", border: "none", borderRadius: 12,
             padding: "14px 0", fontSize: 14, fontWeight: 600, color: "#fff",
-            cursor: "pointer", marginTop: 16, fontFamily: "inherit",
+            cursor: "pointer", marginTop: 8, fontFamily: "inherit",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           }}
         >
@@ -375,6 +464,10 @@ export default function ColaGoaApp() {
   const [cartOpen,     setCartOpen]     = useState(false);
   const [trackOpen,    setTrackOpen]    = useState(false);
   const [drinksOpen,   setDrinksOpen]   = useState(false);
+  const [roomsList,      setRoomsList]      = useState<{ id: number; roomNumber: string }[]>([]);
+  const [roomNumber,     setRoomNumber]     = useState<string>("");
+  const [guestName,      setGuestName]      = useState<string>("");
+  const [guestPhone,     setGuestPhone]     = useState<string>("");
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -385,6 +478,15 @@ export default function ColaGoaApp() {
         setLoadingMenu(false);
       })
       .catch(() => setLoadingMenu(false));
+
+    fetch("/api/rooms")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setRoomsList(data);
+        }
+      })
+      .catch((e) => console.error("Error fetching rooms:", e));
   }, []);
 
   const filtered  = activeFilter === "All" ? menu : menu.filter((i) => i.category === activeFilter);
@@ -411,6 +513,18 @@ export default function ColaGoaApp() {
 
   const placeOrder = async () => {
     if (!cartItems.length) return;
+    if (!roomNumber.trim()) {
+      showToast("Please enter your room number.", false);
+      return;
+    }
+    if (!guestName.trim()) {
+      showToast("Please enter your name.", false);
+      return;
+    }
+    if (!guestPhone.trim()) {
+      showToast("Please enter your phone number.", false);
+      return;
+    }
     setPlacing(true);
     try {
       const res = await fetch("/api/admin/orders", {
@@ -419,7 +533,9 @@ export default function ColaGoaApp() {
         body: JSON.stringify({
           items: cartItems.map((i) => ({ id: i.id, name: i.name, qty: i.qty, price: i.price })),
           totalAmount: cartTotal,
-          roomId: 1,
+          roomNumber: roomNumber.trim(),
+          guestName: guestName.trim(),
+          guestPhone: guestPhone.trim(),
           bookingId: null,
         }),
       });
@@ -993,6 +1109,84 @@ export default function ColaGoaApp() {
                         </div>
                       </div>
                     ))}
+
+                    <div style={{ margin: "14px 0", paddingTop: 10, borderTop: "1px solid #F3F4F6", display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div>
+                        <label style={{ fontSize: 10, fontWeight: 700, color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 6 }}>
+                          🔑 Room Number
+                        </label>
+                        <input
+                          type="text"
+                          list="rooms-datalist-desktop"
+                          placeholder="e.g. 104"
+                          value={roomNumber}
+                          onChange={(e) => setRoomNumber(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "8px 10px",
+                            borderRadius: 8,
+                            border: "1px solid #D1D5DB",
+                            background: "#fff",
+                            fontSize: 12,
+                            fontFamily: "inherit",
+                            outline: "none",
+                            color: "#1A1A2E"
+                          }}
+                        />
+                        <datalist id="rooms-datalist-desktop">
+                          {roomsList.map((room) => (
+                            <option key={room.id} value={room.roomNumber} />
+                          ))}
+                        </datalist>
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: 10, fontWeight: 700, color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 6 }}>
+                          👤 Your Name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Jane Doe"
+                          value={guestName}
+                          onChange={(e) => setGuestName(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "8px 10px",
+                            borderRadius: 8,
+                            border: "1px solid #D1D5DB",
+                            background: "#fff",
+                            fontSize: 12,
+                            fontFamily: "inherit",
+                            outline: "none",
+                            color: "#1A1A2E"
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: 10, fontWeight: 700, color: "#4B5563", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 6 }}>
+                          📞 Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          placeholder="e.g. +91 98765 43210"
+                          value={guestPhone}
+                          onChange={(e) => setGuestPhone(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "8px 10px",
+                            borderRadius: 8,
+                            border: "1px solid #D1D5DB",
+                            background: "#fff",
+                            fontSize: 12,
+                            fontFamily: "inherit",
+                            outline: "none",
+                            color: "#1A1A2E"
+                          }}
+                        />
+                      </div>
+                    </div>
+
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, paddingTop: 10, borderTop: "1px solid #E5E7EB" }}>
                       <span style={{ fontSize: 12, color: "#6B7280" }}>Total</span>
                       <strong style={{ fontSize: 17, fontWeight: 700, color: "#0B74D4" }}>₹{cartTotal.toFixed(0)}</strong>
@@ -1002,7 +1196,7 @@ export default function ColaGoaApp() {
 
                 <button
                   className="checkout-btn"
-                  disabled={cartItems.length === 0 || placing}
+                  disabled={cartItems.length === 0 || !roomNumber.trim() || !guestName.trim() || !guestPhone.trim() || placing}
                   onClick={placeOrder}
                   style={{
                     width: "100%", background: "#0B74D4", border: "none", borderRadius: 9,
@@ -1068,6 +1262,13 @@ export default function ColaGoaApp() {
             onAddOne={addItem}
             onPlace={placeOrder}
             onClose={() => setCartOpen(false)}
+            roomsList={roomsList}
+            roomNumber={roomNumber}
+            setRoomNumber={setRoomNumber}
+            guestName={guestName}
+            setGuestName={setGuestName}
+            guestPhone={guestPhone}
+            setGuestPhone={setGuestPhone}
           />
         )}
 

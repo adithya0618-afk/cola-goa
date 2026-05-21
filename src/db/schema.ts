@@ -156,9 +156,14 @@ export const orders = pgTable("orders", {
 
     roomId: integer("room_id").references(() => rooms.id),
 
+    guestName: text("guest_name"),
+    guestPhone: text("guest_phone"),
+
     status: orderStatusEnum("status").default("pending"),
 
     totalAmount: numeric("total_amount").default("0"),
+
+    isSeen: boolean("is_seen").default(false).notNull(),
 
     createdAt: timestamp("created_at").defaultNow(),
 });

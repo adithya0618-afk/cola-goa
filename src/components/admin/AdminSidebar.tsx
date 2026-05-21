@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -32,6 +33,28 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const [pendingCount, setPendingCount] = useState(0);
+  const [unseenCount, setUnseenCount] = useState(0);
+
+  useEffect(() => {
+    async function fetchCounts() {
+      try {
+        const res = await fetch('/api/admin/orders/count');
+        if (res.ok) {
+          const data = await res.json();
+          setPendingCount(data.pendingCount || 0);
+          setUnseenCount(data.unseenCount || 0);
+        }
+      } catch (err) {
+        console.error('Error fetching order counts:', err);
+      }
+    }
+
+    fetchCounts();
+    // Poll every 5 seconds for real-time updates
+    const i = setInterval(fetchCounts, 5000);
+    return () => clearInterval(i);
+  }, []);
 
   async function handleLogout() {
     await fetch('/api/admin/logout', { method: 'POST' });
@@ -90,6 +113,16 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         <div style={{ color: '#334155', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '8px 10px 6px', textTransform: 'uppercase' }}>
           Main Menu
         </div>
+        <style>{`
+          @keyframes orders-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(239,68,68,0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+          }
+          .new-badge-pulse {
+            animation: orders-pulse 1.8s infinite;
+          }
+        `}</style>
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/');
           return (
@@ -109,7 +142,43 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
               >
                 <Icon size={17} />
-                <span>{label}</span>
+                <span style={{ flex: 1 }}>{label}</span>
+                {label === 'Orders' && (
+                  <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                    {unseenCount > 0 && (
+                      <span 
+                        className="new-badge-pulse"
+                        style={{
+                          background: '#ef4444',
+                          color: '#fff',
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: '2px 5px',
+                          borderRadius: 6,
+                          lineHeight: 1.1,
+                          display: 'inline-block',
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        {unseenCount} New
+                      </span>
+                    )}
+                    {pendingCount > 0 && (
+                      <span style={{
+                        background: '#f59e0b',
+                        color: '#fff',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        padding: '2px 5px',
+                        borderRadius: 6,
+                        lineHeight: 1.1,
+                        display: 'inline-block',
+                      }}>
+                        {pendingCount}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </Link>
           );

@@ -125,8 +125,11 @@ export default function OrdersClient({ orders }: { orders: any[] }) {
                 </div>
 
                 {/* Guest */}
-                <div style={{ fontSize: 12, color: "#6B7280", marginTop: 6 }}>
-                  {o.guestName || "Walk-in Guest"}
+                <div style={{ fontSize: 12, color: "#6B7280", marginTop: 6, display: "flex", flexDirection: "column", gap: 2 }}>
+                  <div style={{ fontWeight: 500, color: "#1A1A2E" }}>{o.guestName || "Walk-in Guest"}</div>
+                  {o.guestPhone && (
+                    <div style={{ fontSize: 11, color: "#9CA3AF" }}>📞 {o.guestPhone}</div>
+                  )}
                 </div>
 
                 {/* Amount */}
