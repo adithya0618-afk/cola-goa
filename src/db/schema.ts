@@ -105,6 +105,7 @@ export const bookings = pgTable("bookings", {
         onDelete: "cascade",
     }),
     name: text("name"),
+    phone: text("phone"),
 
     roomId: integer("room_id").references(() => rooms.id),
 

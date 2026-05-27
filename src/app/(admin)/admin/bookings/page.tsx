@@ -1,6 +1,6 @@
 import db from '@/lib/db';
-import { bookings, rooms } from '@/db/schema';
-import { sql } from 'drizzle-orm';
+import { bookings, rooms, users } from '@/db/schema';
+import { sql, eq } from 'drizzle-orm';
 import BookingsClient from './BookingsClient';
 
 export const dynamic = 'force-dynamic';
@@ -10,6 +10,7 @@ async function getBookings() {
     return await db.select({
       id: bookings.id,
       name: bookings.name,
+      phone: sql<string>`COALESCE(${bookings.phone}, ${users.phone})`,
       roomId: bookings.roomId,
       checkInDate: bookings.checkInDate,
       checkOutDate: bookings.checkOutDate,
@@ -20,8 +21,14 @@ async function getBookings() {
       serviceAmount: bookings.serviceAmount,
       guestToken: bookings.guestToken,
       createdAt: bookings.createdAt,
-    }).from(bookings).orderBy(sql`${bookings.createdAt} DESC`);
-  } catch { return []; }
+    })
+    .from(bookings)
+    .leftJoin(users, eq(bookings.userId, users.id))
+    .orderBy(sql`${bookings.createdAt} DESC`);
+  } catch (e) {
+    console.error("Failed to fetch bookings:", e);
+    return [];
+  }
 }
 
 async function getRooms() {

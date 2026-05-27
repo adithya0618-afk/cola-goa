@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server';
 import db from '@/lib/db';
-import { bookings, rooms, orders } from '@/db/schema';
+import { bookings, rooms, orders, users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
+import { sendSMS } from '@/lib/sms';
+import { RESORT_DETAILS } from '@/lib/invoiceUtils';
 
 export async function POST(
   _request: NextRequest,
@@ -32,6 +33,24 @@ export async function POST(
     // Free the room
     if (booking.roomId) {
       await db.update(rooms).set({ status: 'available' }).where(eq(rooms.id, booking.roomId));
+    }
+
+    // SMS Checkout automation
+    try {
+      let guestPhone = booking.phone;
+      if (!guestPhone && booking.userId) {
+        const [user] = await db.select().from(users).where(eq(users.id, booking.userId)).limit(1);
+        if (user) guestPhone = user.phone;
+      }
+
+      if (guestPhone) {
+        const message = `[${RESORT_DETAILS.name}] Thank you for staying with us. We hope you had a wonderful stay. Safe travels.`;
+        await sendSMS(guestPhone, message);
+      } else {
+        console.warn(`[SMS Checkout] No phone number found for booking ID: ${id}`);
+      }
+    } catch (err) {
+      console.error('[SMS Checkout] Failed to send SMS:', err);
     }
 
     return Response.json({

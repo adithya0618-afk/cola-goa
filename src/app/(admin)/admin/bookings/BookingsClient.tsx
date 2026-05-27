@@ -7,6 +7,7 @@ import { numberToWords, RESORT_DETAILS } from '@/lib/invoiceUtils';
 interface Booking {
   id: string;
   name: string | null;
+  phone: string | null;
   roomId: number | null;
   checkInDate: string;
   checkOutDate: string;
@@ -148,7 +149,12 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
               <tr key={b.id}>
                 <td>
                   <div style={{ fontWeight: 600, fontSize: 14 }}>{b.name || '—'}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{b.id.slice(0, 8)}…</div>
+                  {b.phone && (
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                      {b.phone}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 2 }}>{b.id.slice(0, 8)}…</div>
                 </td>
                 <td style={{ fontWeight: 600 }}>Room {roomMap[b.roomId ?? 0] ?? b.roomId}</td>
                 <td>{b.checkInDate}</td>

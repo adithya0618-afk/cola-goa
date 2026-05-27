@@ -45,9 +45,15 @@ export async function POST(request: NextRequest) {
     // Upsert user
     let userId: string | null = null;
     if (email || phone) {
-      const existingUser = email
-        ? await db.select().from(users).where(eq(users.email, email)).limit(1)
-        : await db.select().from(users).where(eq(users.phone, phone)).limit(1);
+      // Look for an existing user checking both email and phone to avoid unique constraint violations
+      const conditions = [];
+      if (email) conditions.push(eq(users.email, email));
+      if (phone) conditions.push(eq(users.phone, phone));
+      
+      const existingUser = await db.select()
+        .from(users)
+        .where(or(...conditions))
+        .limit(1);
 
       if (existingUser.length > 0) {
         userId = existingUser[0].id;
@@ -63,6 +69,7 @@ export async function POST(request: NextRequest) {
     const [booking] = await db.insert(bookings).values({
       userId,
       name,
+      phone,
       roomId: Number(roomId),
       checkInDate,
       checkOutDate,
