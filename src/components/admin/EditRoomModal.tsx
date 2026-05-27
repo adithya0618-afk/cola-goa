@@ -1,13 +1,41 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, CheckCircle2, BedDouble, User, Settings2, Download, LogOut, Wrench, Phone, Mail } from 'lucide-react';
+import { X, CheckCircle2, User, Download, LogOut, Phone, Mail } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { numberToWords, RESORT_DETAILS } from '@/lib/invoiceUtils';
 
+// Define specific types to replace any
+interface Room {
+  id: number;
+  pricePerNight: string;
+  capacity?: number | null;
+  status: string;
+  roomNumber: string;
+}
+interface Booking {
+  id: string;
+  checkInDate?: string;
+  checkOutDate?: string;
+}
+interface GuestUser {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+}
+interface Order {
+  id: string;
+  itemData?: { name: string };
+  quantity: number;
+  price: number;
+}
+
+
+
 interface EditRoomModalProps {
-  room: any;
+  room: Room;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -18,13 +46,14 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
   const [successMsg, setSuccessMsg] = useState('');
   
   // Data State
-  const [roomData, setRoomData] = useState<any>(null);
-  const [activeBooking, setActiveBooking] = useState<any>(null);
-  const [guestUser, setGuestUser] = useState<any>(null);
-  const [roomOrders, setRoomOrders] = useState<any[]>([]);
+  const [activeBooking, setActiveBooking] = useState<Booking | null>(null);
+  const [guestUser, setGuestUser] = useState<GuestUser | null>(null);
+  const [roomOrders, setRoomOrders] = useState<Order[]>([]);
+
 
   // Form State
   const [pricePerNight, setPricePerNight] = useState(room.pricePerNight);
+  const [paymentStatus, setPaymentStatus] = useState('');
   const [capacity, setCapacity] = useState(room.capacity?.toString() || '2');
   const [status, setStatus] = useState(room.status);
   
@@ -35,34 +64,32 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
   const [checkOutDate, setCheckOutDate] = useState('');
 
   useEffect(() => {
-    fetchRoomDetails();
+    const loadRoomData = async () => {
+      try {
+        const res = await fetch(`/api/admin/rooms/${room.id}`);
+        const data = await res.json();
+        setActiveBooking(data.activeBooking as Booking);
+        setGuestUser(data.guestUser as GuestUser);
+        setRoomOrders(data.roomOrders as Order[] || []);
+
+        if (data.guestUser) {
+          setGuestName(data.guestUser.name || '');
+          setGuestPhone(data.guestUser.phone || '');
+          setGuestEmail(data.guestUser.email || '');
+        }
+        if (data.activeBooking) {
+          setCheckInDate(data.activeBooking.checkInDate || '');
+          setCheckOutDate(data.activeBooking.checkOutDate || '');
+          setPaymentStatus(data.activeBooking.paymentStatus || 'PENDING');
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        setLoading(false);
+      }
+    };
+    loadRoomData();
   }, [room.id]);
-
-  const fetchRoomDetails = async () => {
-    try {
-      const res = await fetch(`/api/admin/rooms/${room.id}`);
-      const data = await res.json();
-      
-      setRoomData(data.room);
-      setActiveBooking(data.activeBooking);
-      setGuestUser(data.guestUser);
-      setRoomOrders(data.roomOrders || []);
-
-      if (data.guestUser) {
-        setGuestName(data.guestUser.name || '');
-        setGuestPhone(data.guestUser.phone || '');
-        setGuestEmail(data.guestUser.email || '');
-      }
-      if (data.activeBooking) {
-        setCheckInDate(data.activeBooking.checkInDate || '');
-        setCheckOutDate(data.activeBooking.checkOutDate || '');
-      }
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-    }
-  };
 
   const handleUpdateRoom = async () => {
     setSaving(true);
@@ -92,13 +119,14 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
         body: JSON.stringify({
           action: 'update_guest',
           payload: { 
-            bookingId: activeBooking.id, 
-            userId: guestUser.id, 
+            bookingId: activeBooking?.id, 
+            userId: guestUser?.id, 
             name: guestName, 
             phone: guestPhone, 
             email: guestEmail,
             checkInDate,
-            checkOutDate
+            checkOutDate,
+            paymentStatus
           }
         })
       });
@@ -136,7 +164,7 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'checkout',
-          payload: { bookingId: activeBooking.id }
+          payload: { bookingId: activeBooking?.id }
         })
       });
       onSuccess();
@@ -212,11 +240,11 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
 
     const roomTotal = nights * Number(room.pricePerNight);
     let itemsTotal = 0;
-    const tableBody: any[] = [
+    const tableBody: (Array<string | number>)[] = [
         [1, `Room Stay - Room ${room.roomNumber}\n(${activeBooking?.checkInDate || 'N/A'} to ${activeBooking?.checkOutDate || 'N/A'})`, 'OTH', nights, Number(room.pricePerNight).toFixed(2), roomTotal.toFixed(2), '0.00', roomTotal.toFixed(2)]
     ];
 
-    roomOrders.forEach((o: any, idx: number) => {
+    roomOrders.forEach((o: Order, idx: number) => {
         const itemTotal = Number(o.price);
         itemsTotal += itemTotal;
         tableBody.push([
@@ -256,7 +284,7 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
         }
     });
 
-    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
 
     // Totals Table Mimic
     doc.setDrawColor(0);
@@ -406,6 +434,15 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
                         value={checkOutDate} 
                         onChange={e => setCheckOutDate(e.target.value)} 
                       />
+                      <div className="field">
+                        <label className="label">Payment Status</label>
+                        <select className="input" value={paymentStatus} onChange={e => setPaymentStatus(e.target.value)}>
+                          <option value="">Select status</option>
+                          <option value="paid">Paid</option>
+                          <option value="unpaid">Unpaid</option>
+                          <option value="partial">Partial</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 

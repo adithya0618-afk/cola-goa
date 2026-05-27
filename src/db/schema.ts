@@ -9,7 +9,8 @@ import {
     boolean,
     pgEnum,
     serial,
-    date
+    date,
+    index
 } from "drizzle-orm/pg-core";
 
 
@@ -60,6 +61,15 @@ export const paymentTxnStatusEnum = pgEnum("payment_txn_status", [
     "failed"
 ]);
 
+export const expenses = pgTable('expenses', {
+  id: serial('id').primaryKey(),
+  amount: numeric('amount').notNull(),
+  description: text('description'),
+  date: date('date').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at')
+});
+
 
 // =======================
 // USERS
@@ -90,7 +100,9 @@ export const rooms = pgTable("rooms", {
     status: roomStatusEnum("status").default("available"),
 
     createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+    index("rooms_status_idx").on(table.status),
+]);
 
 
 // =======================
@@ -123,7 +135,13 @@ export const bookings = pgTable("bookings", {
     totalAmount: numeric("total_amount").default("0"),
 
     createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+    index("bookings_room_id_idx").on(table.roomId),
+    index("bookings_status_idx").on(table.status),
+    index("bookings_payment_status_idx").on(table.paymentStatus),
+    index("bookings_check_out_date_idx").on(table.checkOutDate),
+    index("bookings_created_at_idx").on(table.createdAt),
+]);
 
 
 // =======================
@@ -167,7 +185,13 @@ export const orders = pgTable("orders", {
     isSeen: boolean("is_seen").default(false).notNull(),
 
     createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+    index("orders_booking_id_idx").on(table.bookingId),
+    index("orders_room_id_idx").on(table.roomId),
+    index("orders_status_idx").on(table.status),
+    index("orders_is_seen_idx").on(table.isSeen),
+    index("orders_created_at_idx").on(table.createdAt),
+]);
 
 
 // =======================
@@ -187,7 +211,10 @@ export const orderItems = pgTable("order_items", {
     price: numeric("price").notNull(),
 
     createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+    index("order_items_order_id_idx").on(table.orderId),
+    index("order_items_item_id_idx").on(table.itemId),
+]);
 
 
 // =======================
@@ -209,7 +236,11 @@ export const payments = pgTable("payments", {
     transactionRef: text("transaction_ref"),
 
     createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+    index("payments_booking_id_idx").on(table.bookingId),
+    index("payments_status_idx").on(table.status),
+    index("payments_created_at_idx").on(table.createdAt),
+]);
 
 
 // =======================

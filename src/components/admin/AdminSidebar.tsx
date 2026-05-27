@@ -12,8 +12,8 @@ import {
   Users,
   CreditCard,
   LogOut,
-  Hotel,
   X,
+  TrendingUp,
 } from 'lucide-react';
 
 const navItems = [
@@ -24,6 +24,7 @@ const navItems = [
   { href: '/admin/items',     label: 'Menu / Items', icon: UtensilsCrossed },
   { href: '/admin/staff',     label: 'Staff',        icon: Users },
   { href: '/admin/payments',  label: 'Payments',     icon: CreditCard },
+  { href: '/admin/revenue',   label: 'Revenue',      icon: TrendingUp },
 ];
 
 interface AdminSidebarProps {
@@ -51,9 +52,6 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     }
 
     fetchCounts();
-    // Poll every 5 seconds for real-time updates
-    const i = setInterval(fetchCounts, 5000);
-    return () => clearInterval(i);
   }, []);
 
   async function handleLogout() {

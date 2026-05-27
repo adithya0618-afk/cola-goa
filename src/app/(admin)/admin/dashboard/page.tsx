@@ -9,47 +9,57 @@ export const dynamic = 'force-dynamic';
 async function getDashboardStats() {
   try {
     const [
-      totalRoomsRes,
-      occupiedRoomsRes,
-      maintenanceRoomsRes,
-      activeBookingsRes,
+      roomsStatsRes,
+      bookingsStatsRes,
       revenueRes,
-      pendingPaymentsRes,
       totalStaffRes,
       pendingOrdersRes,
     ] = await Promise.all([
-      db.select({ count: count() }).from(rooms),
-      db.select({ count: count() }).from(rooms).where(eq(rooms.status, 'occupied')),
-      db.select({ count: count() }).from(rooms).where(eq(rooms.status, 'maintenance')),
-      db.select({ count: count() }).from(bookings).where(
-        and(ne(bookings.status, 'checked_out'), ne(bookings.status, 'cancelled'))
-      ),
+      db.execute(sql`
+        SELECT 
+          COUNT(*)::int as total,
+          SUM(CASE WHEN status = 'occupied' THEN 1 ELSE 0 END)::int as occupied,
+          SUM(CASE WHEN status = 'maintenance' THEN 1 ELSE 0 END)::int as maintenance
+        FROM rooms
+      `),
+      db.execute(sql`
+        SELECT 
+          SUM(CASE WHEN status NOT IN ('checked_out', 'cancelled') THEN 1 ELSE 0 END)::int as active_bookings,
+          SUM(CASE WHEN payment_status = 'pending' THEN 1 ELSE 0 END)::int as pending_payments
+        FROM bookings
+      `),
       db.select({ total: sql<number>`COALESCE(SUM(amount),0)` }).from(payments).where(eq(payments.status, 'success')),
-      db.select({ count: count() }).from(bookings).where(eq(bookings.paymentStatus, 'pending')),
       db.select({ count: count() }).from(staff),
       db.select({ count: count() }).from(orders).where(eq(orders.status, 'pending')),
     ]);
 
-    const [totalRooms] = totalRoomsRes;
-    const [occupiedRooms] = occupiedRoomsRes;
-    const [maintenanceRooms] = maintenanceRoomsRes;
-    const [activeBookings] = activeBookingsRes;
+    const roomsStats = roomsStatsRes.rows[0] as any;
+    const bookingsStats = bookingsStatsRes.rows[0] as any;
+
+    const totalRooms = roomsStats?.total ?? 13;
+    const occupiedRooms = roomsStats?.occupied ?? 0;
+    const maintenanceRooms = roomsStats?.maintenance ?? 0;
+    const availableRooms = totalRooms - occupiedRooms - maintenanceRooms;
+
+    const activeBookings = bookingsStats?.active_bookings ?? 0;
+    const pendingPayments = bookingsStats?.pending_payments ?? 0;
+
     const [revenue] = revenueRes;
-    const [pendingPayments] = pendingPaymentsRes;
     const [totalStaff] = totalStaffRes;
 
     return {
-      totalRooms: totalRooms?.count ?? 13,
-      occupiedRooms: occupiedRooms?.count ?? 0,
-      maintenanceRooms: maintenanceRooms?.count ?? 0,
-      availableRooms: (totalRooms?.count ?? 13) - (occupiedRooms?.count ?? 0) - (maintenanceRooms?.count ?? 0),
-      activeBookings: activeBookings?.count ?? 0,
+      totalRooms,
+      occupiedRooms,
+      maintenanceRooms,
+      availableRooms,
+      activeBookings,
       revenue: Number(revenue?.total ?? 0),
-      pendingPayments: pendingPayments?.count ?? 0,
+      pendingPayments,
       totalStaff: totalStaff?.count ?? 0,
       pendingOrders: pendingOrdersRes[0]?.count ?? 0,
     };
-  } catch {
+  } catch (err) {
+    console.error("DASHBOARD STATS ERROR:", err);
     return {
       totalRooms: 13, occupiedRooms: 0, availableRooms: 13,
       maintenanceRooms: 0, activeBookings: 0, revenue: 0, pendingPayments: 0, totalStaff: 0,
@@ -102,9 +112,11 @@ async function getTodaysCheckouts() {
 }
 
 export default async function DashboardPage() {
-  const stats = await getDashboardStats();
-  const recentBookings = await getRecentBookings();
-  const todaysCheckouts = await getTodaysCheckouts();
+  const [stats, recentBookings, todaysCheckouts] = await Promise.all([
+    getDashboardStats(),
+    getRecentBookings(),
+    getTodaysCheckouts(),
+  ]);
   const todayDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
   const statCards = [

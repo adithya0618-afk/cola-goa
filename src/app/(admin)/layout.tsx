@@ -1,13 +1,9 @@
 'use client';
 
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "@/app/globals.css";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useState } from "react";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function AdminLayout({
   children,
@@ -17,7 +13,7 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className={`${inter.className} admin-shell`}>
+    <div className="admin-shell">
       {/* Mobile overlay */}
       <div
         className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`}

@@ -19,7 +19,7 @@ async function run() {
     console.log("Bookings:", res.rows);
     await client1.end();
     return;
-  } catch (err) {
+  } catch (err: any) {
     console.error("Test 1 failed:", err.message);
   }
 
@@ -33,7 +33,7 @@ async function run() {
     console.log("Bookings:", res.rows);
     await client2.end();
     return;
-  } catch (err) {
+  } catch (err: any) {
     console.error("Test 2 failed:", err.message);
   }
 
@@ -50,7 +50,7 @@ async function run() {
     console.log("Bookings:", res.rows);
     await client3.end();
     return;
-  } catch (err) {
+  } catch (err: any) {
     console.error("Test 3 failed:", err.message);
   }
 }

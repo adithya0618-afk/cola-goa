@@ -22,7 +22,8 @@ async function getOrders() {
       .from(orders)
       .leftJoin(bookings, eq(orders.bookingId, bookings.id))
       .leftJoin(rooms, eq(orders.roomId, rooms.id))
-      .orderBy(sql`${orders.createdAt} DESC`);
+      .orderBy(sql`${orders.createdAt} DESC`)
+      .limit(100);
     return result;
   } catch (err) {
     console.error("GET ORDERS ERROR:", err);

@@ -24,7 +24,8 @@ async function getBookings() {
     })
     .from(bookings)
     .leftJoin(users, eq(bookings.userId, users.id))
-    .orderBy(sql`${bookings.createdAt} DESC`);
+    .orderBy(sql`${bookings.createdAt} DESC`)
+    .limit(300);
   } catch (e) {
     console.error("Failed to fetch bookings:", e);
     return [];

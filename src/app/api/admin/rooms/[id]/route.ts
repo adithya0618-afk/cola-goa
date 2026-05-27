@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { rooms, bookings, users, orders, orderItems, items } from '@/db/schema';
-import { eq, desc, inArray } from 'drizzle-orm';
+import { eq, desc, inArray, and, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,36 +19,76 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // If occupied, fetch its active booking & user details
     let activeBooking = null;
     let guestUser = null;
-    let roomOrders: any[] = [];
+    const roomOrders: any[] = [];
     if (room.status === 'occupied') {
       const activeBookings = await db
         .select()
         .from(bookings)
-        .where(inArray(bookings.status, ['booked', 'checked_in']))
-        .orderBy(desc(bookings.createdAt));
+        .where(
+          and(
+            eq(bookings.roomId, roomId),
+            inArray(bookings.status, ['booked', 'checked_in'])
+          )
+        )
+        .orderBy(desc(bookings.createdAt))
+        .limit(1);
 
-      // Filter local till drizzle handles multi-wheres easily in this version
-      const b2 = activeBookings.find(b => b.roomId === roomId);
+      const b2 = activeBookings[0] || null;
 
       if (b2) {
         activeBooking = b2;
-        if (b2.userId) {
-          const userArr = await db.select().from(users).where(eq(users.id, b2.userId));
-          guestUser = userArr[0] || null;
+        
+        // Fetch guest details and all order items in parallel
+        const [userRes, details] = await Promise.all([
+          b2.userId ? db.select().from(users).where(eq(users.id, b2.userId)).limit(1) : Promise.resolve([]),
+          db.execute(sql`
+            SELECT 
+              oi.id as "oi_id",
+              oi.order_id as "oi_orderId",
+              oi.item_id as "oi_itemId",
+              oi.quantity as "oi_quantity",
+              oi.price as "oi_price",
+              oi.created_at as "oi_createdAt",
+              i.id as "i_id",
+              i.name as "i_name",
+              i.type as "i_type",
+              i.category as "i_category",
+              i.description as "i_description",
+              i.image as "i_image",
+              i.price as "i_price",
+              i.is_available as "i_isAvailable",
+              i.created_at as "i_createdAt"
+            FROM order_items oi
+            INNER JOIN orders o ON oi.order_id = o.id
+            LEFT JOIN items i ON oi.item_id = i.id
+            WHERE o.booking_id = ${b2.id}::uuid
+          `)
+        ]);
+
+        if (userRes && userRes.length > 0) {
+          guestUser = userRes[0];
         }
 
-        // Fetch orders and items for the invoice
-        const activeOrders = await db.select().from(orders).where(eq(orders.bookingId, b2.id));
-        for (const order of activeOrders) {
-          const oItems = await db.select().from(orderItems).where(eq(orderItems.orderId, order.id));
-          
-          for (const oItem of oItems) {
-            const itemDef = await db.select().from(items).where(eq(items.id, oItem.itemId!));
-            roomOrders.push({
-              ...oItem,
-              itemData: itemDef[0]
-            });
-          }
+        for (const row of details.rows as any[]) {
+          roomOrders.push({
+            id: row.oi_id,
+            orderId: row.oi_orderId,
+            itemId: row.oi_itemId,
+            quantity: row.oi_quantity,
+            price: row.oi_price,
+            createdAt: row.oi_createdAt,
+            itemData: row.i_id ? {
+              id: row.i_id,
+              name: row.i_name,
+              type: row.i_type,
+              category: row.i_category,
+              description: row.i_description,
+              image: row.i_image,
+              price: row.i_price,
+              isAvailable: row.i_isAvailable,
+              createdAt: row.i_createdAt
+            } : null
+          });
         }
       }
     }
@@ -94,7 +134,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     // 2. Update guest details directly in active booking
     if (action === 'update_guest') {
-      const { bookingId, userId, name, phone, email, checkInDate, checkOutDate } = payload;
+      const { bookingId, userId, name, phone, email, checkInDate, checkOutDate, paymentStatus } = payload;
       
       if (userId) {
         // Run update query on users table
@@ -103,7 +143,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           .where(eq(users.id, userId));
           
         await db.update(bookings)
-          .set({ name, checkInDate, checkOutDate }) // sync name cache
+          .set({ name, checkInDate, checkOutDate, paymentStatus }) // sync name cache
           .where(eq(bookings.id, bookingId));
       }
 

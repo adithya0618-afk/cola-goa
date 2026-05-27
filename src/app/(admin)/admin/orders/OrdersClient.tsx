@@ -11,10 +11,9 @@ const STATUS_META: any = {
 export default function OrdersClient({ orders }: { orders: any[] }) {
   const [filter, setFilter] = useState('all');
 
-  // 🔥 AUTO REFRESH
+  // REMOVED AUTO REFRESH TO FIX PERFORMANCE
   useEffect(() => {
-    const i = setInterval(() => window.location.reload(), 5000);
-    return () => clearInterval(i);
+    // Polling removed
   }, []);
 
   const filtered = filter === 'all'

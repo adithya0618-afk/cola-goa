@@ -45,6 +45,7 @@ export async function PATCH(
           await sendSMS(guestPhone, message);
         } else {
           console.warn(`[SMS Check-In] No phone number found for booking ID: ${id}`);
+
         }
       } catch (err) {
         console.error('[SMS Check-In] Failed to send SMS:', err);

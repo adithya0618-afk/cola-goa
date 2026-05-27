@@ -58,7 +58,6 @@ const CATEGORIES = [
 export default function RoomGrid({ rooms }: RoomGridProps) {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [editRoom, setEditRoom] = useState<Room | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleSuccess = useCallback(() => {
     // Just refresh the whole page immediately
@@ -76,7 +75,7 @@ export default function RoomGrid({ rooms }: RoomGridProps) {
   };
 
   return (
-    <div key={refreshKey}>
+    <div>
       {/* Legend & Filter */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
