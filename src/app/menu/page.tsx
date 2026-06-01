@@ -278,9 +278,9 @@ export default function MenuPage() {
             <div className="cat"><div className="cat-line" /><span className="cat-txt">Veg</span><div className="cat-line" /></div>
             <div className="list">
               {[
-                ["French Fries", "₹250"], ["Masala Papad", "₹200"], ["Veg Pakoda", "₹280"],
-                ["Paneer Pakoda", "₹350"], ["Onion Bajji", "₹270"], ["Gobi Manchurian", "₹300"],
-                ["Chilli Paneer", "₹350"],
+                ["French Fries", "₹ 250"], ["Masala Papad", "₹ 200"], ["Veg Pakoda", "₹ 280"],
+                ["Paneer Pakoda", "₹ 350"], ["Onion Bajji", "₹ 270"], ["Gobi Manchurian", "₹ 300"],
+                ["Chilli Paneer", "₹ 350"],
               ].map(([name, price]) => (
                 <div className="row" key={name}>
                   <div className="row-l"><div className="dot dv" /><span className="row-name">{name}</span></div>
@@ -292,7 +292,7 @@ export default function MenuPage() {
             <div className="cat"><div className="cat-line" /><span className="cat-txt">Non Veg</span><div className="cat-line" /></div>
             <div className="list">
               {[
-                ["Crispy Chicken", "₹400"], ["Chilli Chicken", "₹400"], ["Chicken Manchurian", "₹400"],
+                ["Crispy Chicken", "₹ 400"], ["Chilli Chicken", "₹400"], ["Chicken Manchurian", "₹400"],
                 ["Prawns Chilli", "₹450"], ["Prawns Golden Fry", "₹450"], ["Golden Fry Kalamari", "₹400"],
                 ["Squid Chilli", "₹400"], ["Squid Tempura", "₹400"], ["Chicken Choila", "₹450"],
               ].map(([name, price]) => (
@@ -318,7 +318,7 @@ export default function MenuPage() {
             <div className="cat"><div className="cat-line" /><span className="cat-txt">Veg</span><div className="cat-line" /></div>
             <div className="list">
               {[
-                ["Dal Fry / Dal Tadka", "₹300"], ["Dal Palak", "₹350"], ["Chana Masala", "₹350"],
+                ["Dal Fry / Dal Tadka", "₹ 300"], ["Dal Palak", "₹350"], ["Chana Masala", "₹350"],
                 ["Rajma Masala", "₹350"], ["Mixed Veg Masala", "₹400"], ["Veg Kolhapuri", "₹400"],
                 ["Mushroom Masala", "₹400"], ["Alu Gobi", "₹400"], ["Palak Paneer", "₹450"],
                 ["Kadai Paneer", "₹450"],
@@ -492,10 +492,10 @@ export default function MenuPage() {
             <div className="cat"><div className="cat-line" /><span className="cat-txt">Beer — Bottle</span><div className="cat-line" /></div>
             <div className="bar-list">
               {[
-                ["Corona","₹200"],["Hoegaarden","₹200"],["Budweiser","₹200"],["Carlsberg","₹150"],
-                ["Kingfisher Premium","₹150"],["Kingfisher Ultra","₹150"],["Bira","₹150"],
-                ["Goan Bear","₹150"],["Tuborg","₹150"],["Kingfisher Tin","₹200"],
-                ["Carlsberg Tin","₹200"],["Budweiser Tin","₹200"],["Brezers","₹180"],
+                ["Corona", "₹200"], ["Hoegaarden", "₹200"], ["Budweiser", "₹200"], ["Carlsberg", "₹150"],
+                ["Kingfisher Premium", "₹150"], ["Kingfisher Ultra", "₹150"], ["Bira", "₹150"],
+                ["Goan Bear", "₹150"], ["Tuborg", "₹150"], ["Kingfisher Tin", "₹200"],
+                ["Carlsberg Tin", "₹200"], ["Budweiser Tin", "₹200"], ["Brezers", "₹180"],
               ].map(([name, price]) => (
                 <div className="bar-row" key={name}>
                   <span className="bar-name">{name}</span>
@@ -507,9 +507,9 @@ export default function MenuPage() {
             <div className="cat"><div className="cat-line" /><span className="cat-txt">Scotch Whisky</span><div className="cat-line" /></div>
             <div className="bar-list">
               {[
-                ["Black Dog","₹300"],["Something Special","₹250"],["100 Pipers","₹250"],
-                ["Black & White","₹250"],["Dewars","₹250"],["William Lawson's","₹250"],
-                ["Passport Scotch","₹250"],["VAT 69","₹250"],
+                ["Black Dog", "₹300"], ["Something Special", "₹250"], ["100 Pipers", "₹250"],
+                ["Black & White", "₹250"], ["Dewars", "₹250"], ["William Lawson's", "₹250"],
+                ["Passport Scotch", "₹250"], ["VAT 69", "₹250"],
               ].map(([name, price]) => (
                 <div className="bar-row" key={name}>
                   <span className="bar-name">{name}</span>
@@ -521,8 +521,8 @@ export default function MenuPage() {
             <div className="cat"><div className="cat-line" /><span className="cat-txt">Whisky</span><div className="cat-line" /></div>
             <div className="bar-list">
               {[
-                ["Rock Ford","₹200"],["Mackers Delight","₹200"],["Blenders Pride","₹200"],
-                ["Signature","₹200"],["Oaken Glow","₹200"],["Royal Challenge","₹200"],["O'Henry","₹200"],
+                ["Rock Ford", "₹200"], ["Mackers Delight", "₹200"], ["Blenders Pride", "₹200"],
+                ["Signature", "₹200"], ["Oaken Glow", "₹200"], ["Royal Challenge", "₹200"], ["O'Henry", "₹200"],
               ].map(([name, price]) => (
                 <div className="bar-row" key={name}>
                   <span className="bar-name">{name}</span>
@@ -534,9 +534,9 @@ export default function MenuPage() {
             <div className="cat"><div className="cat-line" /><span className="cat-txt">Vodka &amp; Others</span><div className="cat-line" /></div>
             <div className="bar-list">
               {[
-                ["Smirnoff","₹120"],["Magic Moment","₹100"],["Romanov Vodka","₹100"],
-                ["Old Monk (Rum)","₹100"],["Wine","₹300"],["White Rum","₹120"],
-                ["Gin","₹100"],["Tequila","₹200"],["Fenny","₹80"],
+                ["Smirnoff", "₹120"], ["Magic Moment", "₹100"], ["Romanov Vodka", "₹100"],
+                ["Old Monk (Rum)", "₹100"], ["Wine", "₹300"], ["White Rum", "₹120"],
+                ["Gin", "₹100"], ["Tequila", "₹200"], ["Fenny", "₹80"],
               ].map(([name, price]) => (
                 <div className="bar-row" key={name}>
                   <span className="bar-name">{name}</span>
@@ -548,8 +548,8 @@ export default function MenuPage() {
             <div className="cat"><div className="cat-line" /><span className="cat-txt">Soft Drinks</span><div className="cat-line" /></div>
             <div className="bar-list">
               {[
-                ["750 ML","₹80"],["Soda","₹40"],["Red Bull","₹230"],
-                ["Tin 330ML","₹80"],["Water Bottle 1L","₹50"],["Water Bottle 500ML","₹30"],
+                ["750 ML", "₹80"], ["Soda", "₹40"], ["Red Bull", "₹230"],
+                ["Tin 330ML", "₹80"], ["Water Bottle 1L", "₹50"], ["Water Bottle 500ML", "₹30"],
               ].map(([name, price]) => (
                 <div className="bar-row" key={name}>
                   <span className="bar-name">{name}</span>
