@@ -563,3 +563,7 @@ Next, I ran
  npx dotenv -e .env.local npx tsx src/db/seed.ts to execute the database seeding script.
 
  DATABASE_URL="postgresql://colapostgres_user:Q0kfdzcQd1BbdvGVBGgV4geIRGNkE4wY@dpg-d87k1fmk1jcs73b22qa0-a.ohio-postgres.render.com/colapostgres?sslmode=require"
+
+ QR CODE -
+ npm install qrcode
+ npm install -D @types/qrcode
