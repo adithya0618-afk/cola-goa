@@ -206,7 +206,7 @@ export default function ItemsClient({ items: rawItems }: { items: RawItem[] }) {
   });
 
   // ── Group display ────────────────────────────────────────────────────────────
-  const isDrinkItem = (item: Item) => item.categories.some(c => DRINK_CATEGORIES.includes(c));
+  // const isDrinkItem = (item: Item) => item.categories.some(c => DRINK_CATEGORIES.includes(c));
 
   return (
     <div className="animate-fade-in">
@@ -269,23 +269,18 @@ export default function ItemsClient({ items: rawItems }: { items: RawItem[] }) {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 16 }}>
           {filtered.map(item => {
-            const isDrink = isDrinkItem(item);
+            // const isDrink = isDrinkItem(item);
             return (
               <div
-                key={item.id}
-                className="card"
-                style={{
-                  padding: 18, opacity: item.isAvailable ? 1 : 0.6,
-                  border: isDrink ? '1.5px solid #C9A84C33' : undefined,
-                  background: isDrink ? 'linear-gradient(135deg,#1a1a2e,#1e2035)' : undefined,
-                  color: isDrink ? '#fff' : undefined,
-                }}
-              >
+  key={item.id}
+  className="card"
+  style={{ padding: 18, opacity: item.isAvailable ? 1 : 0.6 }}
+>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6, color: isDrink ? '#fff' : undefined }}>
-                      {isDrink ? '🍸 ' : ''}{item.name}
-                    </div>
+                    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>
+  {item.name}
+</div>
                     {/* Category chips */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                       <span className={`badge ${item.type === 'food' ? 'badge-info' : 'badge-warning'}`}>{item.type}</span>
@@ -302,13 +297,13 @@ export default function ItemsClient({ items: rawItems }: { items: RawItem[] }) {
                       })}
                     </div>
                   </div>
-                  <div style={{ fontWeight: 800, fontSize: 17, color: isDrink ? '#C9A84C' : 'var(--accent)', flexShrink: 0, marginLeft: 8 }}>
+<div style={{ fontWeight: 800, fontSize: 17, color: 'var(--accent)', flexShrink: 0, marginLeft: 8 }}>
                     ₹{Number(item.price).toLocaleString('en-IN')}
                   </div>
                 </div>
 
                 {item.description && (
-                  <div style={{ fontSize: 12, color: isDrink ? 'rgba(255,255,255,0.5)' : 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.5 }}>
+<div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.5 }}>
                     {item.description}
                   </div>
                 )}
@@ -316,17 +311,15 @@ export default function ItemsClient({ items: rawItems }: { items: RawItem[] }) {
                 {/* Multi-category info note */}
                 {item.categories.length > 1 && (
                   <div style={{
-                    fontSize: 10, marginBottom: 10,
-                    color: isDrink ? 'rgba(201,168,76,0.7)' : 'var(--text-muted)',
-                    background: isDrink ? 'rgba(201,168,76,0.08)' : '#F9FAFB',
-                    borderRadius: 6, padding: '4px 8px',
-                    border: isDrink ? '1px solid rgba(201,168,76,0.2)' : '1px solid var(--border)',
-                  }}>
+  fontSize: 10, marginBottom: 10, color: 'var(--text-muted)',
+  background: '#F9FAFB', borderRadius: 6, padding: '4px 8px',
+  border: '1px solid var(--border)',
+}}>
                     ✦ Appears in {item.categories.length} categories — no duplicates shown to guests
                   </div>
                 )}
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: `1px solid ${isDrink ? 'rgba(255,255,255,0.1)' : 'var(--border)'}` }}>
+<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid var(--border)' }}>
                   <button
                     onClick={() => toggleAvailability(item)}
                     style={{
@@ -339,8 +332,8 @@ export default function ItemsClient({ items: rawItems }: { items: RawItem[] }) {
                     {item.isAvailable ? '✅ Available' : '❌ Unavailable'}
                   </button>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button className="btn btn-outline btn-sm" onClick={() => openEdit(item)}
-                      style={isDrink ? { borderColor: 'rgba(255,255,255,0.2)', color: '#fff' } : undefined}>
+                    <button className="btn btn-outline btn-sm" onClick={() => openEdit(item)}>
+
                       <Pencil size={12} />
                     </button>
                     <button className="btn btn-sm" onClick={() => handleDelete(item.id)} style={{ background: '#fee2e2', color: '#991b1b', border: 'none' }}>
