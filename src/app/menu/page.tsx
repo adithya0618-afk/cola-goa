@@ -255,7 +255,7 @@ export default function MenuPage() {
             <button className="tab active" onClick={(e) => go("starters", e.currentTarget)}>Starters</button>
             <button className="tab" onClick={(e) => go("mains", e.currentTarget)}>Mains</button>
             <button className="tab" onClick={(e) => go("rice", e.currentTarget)}>Rice</button>
-            <button className="tab" onClick={(e) => go("noodles", e.currentTarget)}>Noodles</button>
+            <button className="tab" onClick={(e) => go("chinese", e.currentTarget)}>Chinese</button>
             <button className="tab" onClick={(e) => go("cocktails", e.currentTarget)}>Cocktails</button>
             <button className="tab" onClick={(e) => go("mocktails", e.currentTarget)}>Mocktails</button>
             <button className="tab" onClick={(e) => go("bar", e.currentTarget)}>Bar</button>
@@ -318,7 +318,7 @@ export default function MenuPage() {
             <div className="cat"><div className="cat-line" /><span className="cat-txt">Veg</span><div className="cat-line" /></div>
             <div className="list">
               {[
-                ["Dal Fry / Dal Tadka", "₹ 300"], ["Dal Palak", "₹350"], ["Chana Masala", "₹350"],
+                ["Dal Fry / Dal Tadka", "₹ 300"], ["Dal Palak", "₹ 350"], ["Chana Masala", "₹ 350"],
                 ["Rajma Masala", "₹350"], ["Mixed Veg Masala", "₹400"], ["Veg Kolhapuri", "₹400"],
                 ["Mushroom Masala", "₹400"], ["Alu Gobi", "₹400"], ["Palak Paneer", "₹450"],
                 ["Kadai Paneer", "₹450"],
@@ -385,23 +385,23 @@ export default function MenuPage() {
             </div>
           </section>
 
-          {/* ═══ NOODLES & PASTA ═══ */}
-          <section className="sec" id="noodles">
+          {/* ═══ CHINESE & PASTA ═══ */}
+          <section className="sec" id="chinese">
             <div className="sec-head">
-              <p className="sec-tag">Noodles &amp; More</p>
-              <h2 className="sec-title">Noodles &amp; <em>Pasta</em></h2>
+              <p className="sec-tag">Chinese &amp; More</p>
+              <h2 className="sec-title">Chinese &amp; <em>Pasta</em></h2>
             </div>
             <div className="legend">
               <div className="lg-item"><div className="dot dv" />Veg</div>
               <div className="lg-item"><div className="dot dn" />Non-Veg</div>
             </div>
 
-            <div className="cat"><div className="cat-line" /><span className="cat-txt">Noodles</span><div className="cat-line" /></div>
+            <div className="cat"><div className="cat-line" /><span className="cat-txt">Chinese</span><div className="cat-line" /></div>
             <div className="list">
               {[
-                ["Veg Noodles", "₹350", "v"], ["Veg Schezwan Noodles", "₹400", "v"],
-                ["Chicken Noodles", "₹450", "n"], ["Chicken Schezwan Noodles", "₹500", "n"],
-                ["Prawns Noodles", "₹550", "n"], ["Prawns Schezwan Noodles", "₹550", "n"],
+                ["Veg Chinese", "₹350", "v"], ["Veg Schezwan Chinese", "₹ 400", "v"],
+                ["Chicken Chinese", "₹ 450", "n"], ["Chicken Schezwan Chinese", "₹500", "n"],
+                ["Prawns Chinese", "₹550", "n"], ["Prawns Schezwan Chinese", "₹550", "n"],
               ].map(([name, price, type]) => (
                 <div className="row" key={name}>
                   <div className="row-l"><div className={`dot ${type === "v" ? "dv" : "dn"}`} /><span className="row-name">{name}</span></div>
@@ -492,10 +492,10 @@ export default function MenuPage() {
             <div className="cat"><div className="cat-line" /><span className="cat-txt">Beer — Bottle</span><div className="cat-line" /></div>
             <div className="bar-list">
               {[
-                ["Corona", "₹200"], ["Hoegaarden", "₹200"], ["Budweiser", "₹200"], ["Carlsberg", "₹150"],
-                ["Kingfisher Premium", "₹150"], ["Kingfisher Ultra", "₹150"], ["Bira", "₹150"],
-                ["Goan Bear", "₹150"], ["Tuborg", "₹150"], ["Kingfisher Tin", "₹200"],
-                ["Carlsberg Tin", "₹200"], ["Budweiser Tin", "₹200"], ["Brezers", "₹180"],
+                ["Corona", "₹ 200"], ["Hoegaarden", "₹ 200"], ["Budweiser", "₹200"], ["Carlsberg", "₹150"],
+                ["Kingfisher Premium", "₹ 150"], ["Kingfisher Ultra", "₹150"], ["Bira", "₹150"],
+                ["Goan Bear", "₹ 150"], ["Tuborg", "₹150"], ["Kingfisher Tin", "₹200"],
+                ["Carlsberg Tin", "₹ 200"], ["Budweiser Tin", "₹200"], ["Brezers", "₹180"],
               ].map(([name, price]) => (
                 <div className="bar-row" key={name}>
                   <span className="bar-name">{name}</span>
@@ -548,7 +548,7 @@ export default function MenuPage() {
             <div className="cat"><div className="cat-line" /><span className="cat-txt">Soft Drinks</span><div className="cat-line" /></div>
             <div className="bar-list">
               {[
-                ["750 ML", "₹80"], ["Soda", "₹40"], ["Red Bull", "₹230"],
+                ["750 ML", "₹ 80"], ["Soda", "₹ 40"], ["Red Bull", "₹ 230"],
                 ["Tin 330ML", "₹80"], ["Water Bottle 1L", "₹50"], ["Water Bottle 500ML", "₹30"],
               ].map(([name, price]) => (
                 <div className="bar-row" key={name}>
