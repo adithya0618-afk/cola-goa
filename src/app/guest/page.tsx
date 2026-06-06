@@ -424,24 +424,33 @@ function CartSheet({
         {cartItems.length > 0 && (
           <div style={{ marginBottom: 16, borderBottom: "1px solid #F3F4F6", paddingBottom: 16, display: "flex", flexDirection: "column", gap: 12 }}>
             {[
-              { label: "🔑 Room Number", key: "room",  placeholder: "e.g. 104",           type: "text",  value: roomNumber, set: setRoomNumber  },
-              { label: "👤 Your Name",   key: "name",  placeholder: "e.g. Jane Doe",       type: "text",  value: guestName,  set: setGuestName   },
-              { label: "📞 Phone",       key: "phone", placeholder: "e.g. +91 98765 43210", type: "tel",   value: guestPhone, set: setGuestPhone  },
+              { label: "🔑 Room Number", key: "room",  placeholder: "Select Room",       value: roomNumber, set: setRoomNumber  },
+              { label: "👤 Your Name",   key: "name",  placeholder: "e.g. Jane Doe",       value: guestName,  set: setGuestName   },
+              { label: "📞 Phone",       key: "phone", placeholder: "e.g. 9876543210",    value: guestPhone, set: setGuestPhone  },
             ].map((f) => (
               <div key={f.key}>
                 <label style={{ fontSize: 11, fontWeight: 700, color: "#4B5563", display: "block", marginBottom: 6 }}>{f.label}</label>
-                <input
-                  type={f.type}
-                  list={f.key === "room" ? "rooms-list-mobile" : undefined}
-                  placeholder={f.placeholder}
-                  value={f.value}
-                  onChange={(e) => f.set(e.target.value)}
-                  style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #D1D5DB", fontSize: 13, fontFamily: "inherit", outline: "none", color: "#1A1A2E" }}
-                />
-                {f.key === "room" && (
-                  <datalist id="rooms-list-mobile">
-                    {roomsList.map((r) => <option key={r.id} value={r.roomNumber} />)}
-                  </datalist>
+                {f.key === "room" ? (
+                  <select
+                    value={f.value}
+                    onChange={(e) => f.set(e.target.value)}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #D1D5DB", fontSize: 13, fontFamily: "inherit", outline: "none", color: "#1A1A2E", background: "#fff" }}
+                  >
+                    <option value="">Select Room</option>
+                    {roomsList.map((r) => (
+                      <option key={r.id} value={r.roomNumber}>
+                        Room {r.roomNumber}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type={f.key === "phone" ? "tel" : "text"}
+                    placeholder={f.placeholder}
+                    value={f.value}
+                    onChange={(e) => f.set(e.target.value)}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #D1D5DB", fontSize: 13, fontFamily: "inherit", outline: "none", color: "#1A1A2E" }}
+                  />
                 )}
               </div>
             ))}
@@ -538,6 +547,11 @@ export default function ColaGoaApp() {
   const placeOrder = async () => {
     if (!cartItems.length || !roomNumber.trim() || !guestName.trim() || !guestPhone.trim()) {
       showToast("Please fill in room, name and phone.", false);
+      return;
+    }
+    const cleanPhone = guestPhone.replace(/\D/g, '');
+    if (cleanPhone.length !== 10) {
+      showToast("Phone number must be exactly 10 digits.", false);
       return;
     }
     setPlacing(true);

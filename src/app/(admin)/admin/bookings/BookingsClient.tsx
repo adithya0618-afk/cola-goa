@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Search, Filter, ExternalLink, CheckCircle, LogOut, X, AlertTriangle, FileText, Printer } from 'lucide-react';
 import { numberToWords, RESORT_DETAILS } from '@/lib/invoiceUtils';
+import Portal from '@/components/admin/Portal';
 
 interface Booking {
   id: string;
@@ -14,6 +15,7 @@ interface Booking {
   status: string | null;
   paymentStatus: string | null;
   totalAmount: string | null;
+  paidAmount?: string | null;
   guestToken: string | null;
   createdAt: Date | null;
 }
@@ -139,12 +141,13 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
               <th>Total</th>
               <th>Status</th>
               <th>Payment</th>
+              <th>Remaining</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>No bookings found</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>No bookings found</td></tr>
             ) : filtered.map(b => (
               <tr key={b.id}>
                 <td>
@@ -164,6 +167,19 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
                 </td>
                 <td><span className={`badge ${statusColor(b.status)}`}>{b.status}</span></td>
                 <td><span className={`badge ${payColor(b.paymentStatus)}`}>{b.paymentStatus}</span></td>
+                <td style={{ fontWeight: 600 }}>
+                  {(() => {
+                    if (b.paymentStatus === 'paid') return '—';
+                    const total = Number(b.totalAmount ?? 0);
+                    const paid = Number(b.paidAmount ?? 0);
+                    const remaining = Math.max(0, total - paid);
+                    return remaining > 0 ? (
+                      <span style={{ color: b.paymentStatus === 'partial' ? '#b45309' : 'var(--danger)', fontWeight: 700 }}>
+                        ₹{remaining.toLocaleString('en-IN')}
+                      </span>
+                    ) : '—';
+                  })()}
+                </td>
                 <td>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {b.status === 'booked' && (
@@ -243,12 +259,13 @@ function ConfirmCancelModal({ booking, roomNumber, onClose, onConfirm, isUpdatin
   isUpdating: boolean;
 }) {
   return (
-    <div className="overlay animate-fade-in" style={{ zIndex: 60 }} onClick={onClose}>
-      <div 
-        className="modal" 
-        style={{ maxWidth: 400, textAlign: 'center', padding: 32 }} 
-        onClick={e => e.stopPropagation()}
-      >
+    <Portal>
+      <div className="overlay animate-fade-in" style={{ zIndex: 99999 }} onClick={onClose}>
+        <div 
+          className="modal" 
+          style={{ maxWidth: 400, textAlign: 'center', padding: 32 }} 
+          onClick={e => e.stopPropagation()}
+        >
         <div style={{
           width: 64, height: 64, borderRadius: '50%', background: 'var(--danger-light)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -289,7 +306,8 @@ function ConfirmCancelModal({ booking, roomNumber, onClose, onConfirm, isUpdatin
         </div>
       </div>
     </div>
-  );
+  </Portal>
+);
 }
 
 function CheckoutInvoiceModal({ booking, invoice, roomNumber, onClose }: {
@@ -311,21 +329,22 @@ function CheckoutInvoiceModal({ booking, invoice, roomNumber, onClose }: {
   const totalWithTax = subtotal + sgst + cgst;
 
   return (
-    <div className="overlay animate-fade-in" onClick={onClose} style={{ zIndex: 100 }}>
-      {/* Print Styles */}
-      <style>{`
-        @media print {
-          body * { visibility: hidden; }
-          .printable-invoice, .printable-invoice * { visibility: visible; }
-          .printable-invoice { 
-            position: absolute; left: 0; top: 0; width: 100%; 
-            padding: 40px !important; box-shadow: none !important; border: none !important;
+    <Portal>
+      <div className="overlay animate-fade-in" onClick={onClose} style={{ zIndex: 99999 }}>
+        {/* Print Styles */}
+        <style>{`
+          @media print {
+            body * { visibility: hidden; }
+            .printable-invoice, .printable-invoice * { visibility: visible; }
+            .printable-invoice { 
+              position: absolute; left: 0; top: 0; width: 100%; 
+              padding: 40px !important; box-shadow: none !important; border: none !important;
+            }
+            .no-print { display: none !important; }
           }
-          .no-print { display: none !important; }
-        }
-      `}</style>
+        `}</style>
 
-      <div className="modal printable-invoice" style={{ maxWidth: 850, padding: 0 }} onClick={e => e.stopPropagation()}>
+        <div className="modal printable-invoice" style={{ maxWidth: 850, padding: 0 }} onClick={e => e.stopPropagation()}>
         {/* Modal Header (UI only) */}
         <div className="no-print" style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fcfcfc' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -482,5 +501,6 @@ function CheckoutInvoiceModal({ booking, invoice, roomNumber, onClose }: {
         </div>
       </div>
     </div>
-  );
+  </Portal>
+);
 }

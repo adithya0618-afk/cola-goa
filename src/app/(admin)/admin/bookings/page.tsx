@@ -1,5 +1,5 @@
 import db from '@/lib/db';
-import { bookings, rooms, users } from '@/db/schema';
+import { bookings, rooms, users, payments } from '@/db/schema';
 import { sql, eq } from 'drizzle-orm';
 import BookingsClient from './BookingsClient';
 
@@ -21,6 +21,12 @@ async function getBookings() {
       serviceAmount: bookings.serviceAmount,
       guestToken: bookings.guestToken,
       createdAt: bookings.createdAt,
+      paidAmount: sql<string>`COALESCE((
+        SELECT SUM(amount)::text
+        FROM payments
+        WHERE payments.booking_id = bookings.id
+          AND payments.status = 'success'
+      ), '0')`,
     })
     .from(bookings)
     .leftJoin(users, eq(bookings.userId, users.id))

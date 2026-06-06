@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import db from '@/lib/db';
-import { bookings, rooms, users } from '@/db/schema';
+import { bookings, rooms, users, payments } from '@/db/schema';
 import { eq, and, or, gte, lte } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { sql } from 'drizzle-orm';
@@ -19,7 +19,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, phone, email, roomId, checkInDate, checkOutDate, paymentStatus, roomAmount, totalAmount } = body;
+    const { name, phone, email, roomId, checkInDate, checkOutDate, paymentStatus, roomAmount, totalAmount, advanceAmount } = body;
 
     if (!name || !roomId || !checkInDate || !checkOutDate) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
@@ -80,6 +80,27 @@ export async function POST(request: NextRequest) {
       serviceAmount: '0',
       totalAmount: totalAmount?.toString() || roomAmount?.toString() || '0',
     }).returning();
+
+    // Create payment entry if status is partial or paid
+    if (booking) {
+      if (paymentStatus === 'partial' && advanceAmount) {
+        await db.insert(payments).values({
+          bookingId: booking.id,
+          amount: advanceAmount.toString(),
+          paymentMethod: 'cash',
+          status: 'success',
+          transactionRef: 'Initial Advance',
+        });
+      } else if (paymentStatus === 'paid') {
+        await db.insert(payments).values({
+          bookingId: booking.id,
+          amount: booking.totalAmount || '0',
+          paymentMethod: 'cash',
+          status: 'success',
+          transactionRef: 'Full Payment',
+        });
+      }
+    }
 
     // Mark room as occupied
     await db.update(rooms).set({ status: 'occupied' }).where(eq(rooms.id, Number(roomId)));

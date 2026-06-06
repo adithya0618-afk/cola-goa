@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { X, User, Phone, Mail, Calendar, CreditCard, CheckCircle, Loader } from 'lucide-react';
 
+import Portal from './Portal';
+
 interface Room {
   id: number;
   roomNumber: string;
@@ -73,219 +75,227 @@ export default function BookingModal({ room, onClose, onSuccess }: BookingModalP
   const paymentLabels: Record<string, string> = { pending: 'Pending', partial: 'Partial Advance', paid: 'Fully Paid' };
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <div className="modal animate-fade-in" style={{ maxWidth: 520 }} onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div style={{
-          padding: '22px 28px', borderBottom: '1px solid var(--border)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
-          <div>
-            <div style={{ fontSize: 17, fontWeight: 700 }}>
-              {step === 'done' ? '✅ Booking Confirmed' : `Book Room ${room.roomNumber}`}
+    <Portal>
+      <div className="overlay" onClick={onClose}>
+        <div className="modal animate-fade-in" style={{ maxWidth: 520 }} onClick={e => e.stopPropagation()}>
+          {/* Header */}
+          <div style={{
+            padding: '22px 28px', borderBottom: '1px solid var(--border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 700 }}>
+                {step === 'done' ? '✅ Booking Confirmed' : `Book Room ${room.roomNumber}`}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                ₹{Number(room.pricePerNight).toLocaleString('en-IN')} / night · Capacity: {room.capacity ?? 2}
+              </div>
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-              ₹{Number(room.pricePerNight).toLocaleString('en-IN')} / night · Capacity: {room.capacity ?? 2}
-            </div>
+            <button onClick={() => { if (step === 'done') onSuccess(); onClose(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+              <X size={20} color="var(--text-secondary)" />
+            </button>
           </div>
-          <button onClick={() => { if (step === 'done') onSuccess(); onClose(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-            <X size={20} color="var(--text-secondary)" />
-          </button>
-        </div>
 
-        <div style={{ padding: '24px 28px' }}>
-          {/* STEP: Details */}
-          {step === 'details' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {error && (
-                <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', color: '#991b1b', fontSize: 13 }}>
-                  {error}
-                </div>
-              )}
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                <div className="field" style={{ gridColumn: '1/-1' }}>
-                  <label className="label">Guest Full Name *</label>
-                  <div style={{ position: 'relative' }}>
-                    <User size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
-                    <input className="input" placeholder="John Doe" value={form.name} onChange={e => update('name', e.target.value)} style={{ paddingLeft: 34 }} required />
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label className="label">Phone *</label>
-                  <div style={{ position: 'relative' }}>
-                    <Phone size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
-                    <input className="input" placeholder="+91 99999 00000" value={form.phone} onChange={e => update('phone', e.target.value)} style={{ paddingLeft: 34 }} required />
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label className="label">Email</label>
-                  <div style={{ position: 'relative' }}>
-                    <Mail size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
-                    <input className="input" type="email" placeholder="guest@email.com" value={form.email} onChange={e => update('email', e.target.value)} style={{ paddingLeft: 34 }} />
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label className="label">Check-In Date *</label>
-                  <div style={{ position: 'relative' }}>
-                    <Calendar size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
-                    <input className="input" type="date" value={form.checkInDate} min={today} onChange={e => update('checkInDate', e.target.value)} style={{ paddingLeft: 34 }} required />
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label className="label">Check-Out Date *</label>
-                  <div style={{ position: 'relative' }}>
-                    <Calendar size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
-                    <input className="input" type="date" value={form.checkOutDate} min={form.checkInDate} onChange={e => update('checkOutDate', e.target.value)} style={{ paddingLeft: 34 }} required />
-                  </div>
-                </div>
-
-                <div className="field" style={{ gridColumn: '1/-1' }}>
-                  <label className="label">Payment Status</label>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {(['pending', 'partial', 'paid'] as const).map(s => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => update('paymentStatus', s)}
-                        style={{
-                          flex: 1, padding: '9px 0', borderRadius: 10, fontSize: 13, fontWeight: 600,
-                          border: form.paymentStatus === s ? '2px solid var(--accent)' : '1.5px solid var(--border)',
-                          background: form.paymentStatus === s ? 'var(--accent-light)' : 'transparent',
-                          color: form.paymentStatus === s ? 'var(--accent-dark)' : 'var(--text-secondary)',
-                          cursor: 'pointer', transition: 'all 0.15s',
-                        }}
-                      >
-                        {paymentLabels[s]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {form.paymentStatus === 'partial' && (
-                  <div className="field" style={{ gridColumn: '1/-1' }}>
-                    <label className="label">Advance Amount (₹)</label>
-                    <div style={{ position: 'relative' }}>
-                      <CreditCard size={14} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
-                      <input className="input" type="number" placeholder="0" value={form.advanceAmount} onChange={e => update('advanceAmount', e.target.value)} style={{ paddingLeft: 34 }} />
-                    </div>
+          <div style={{ padding: '16px 20px' }}>
+            {/* STEP: Details */}
+            {step === 'details' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {error && (
+                  <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, padding: '8px 12px', color: '#991b1b', fontSize: 13 }}>
+                    {error}
                   </div>
                 )}
-              </div>
 
-              {/* Summary bar */}
-              <div style={{
-                background: 'var(--bg-base)', borderRadius: 12, padding: '14px 16px',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              }}>
-                <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                  {nights} night{nights !== 1 ? 's' : ''} · Room {room.roomNumber}
-                </div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--accent)' }}>
-                  ₹{roomAmount.toLocaleString('en-IN')}
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                <button className="btn btn-outline" onClick={onClose} style={{ flex: 1 }}>Cancel</button>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    if (!form.name || !form.phone || !form.checkInDate || !form.checkOutDate) {
-                      setError('Please fill all required fields');
-                      return;
-                    }
-                    setStep('summary');
-                  }}
-                  style={{ flex: 2 }}
-                >
-                  Review Booking →
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP: Summary */}
-          {step === 'summary' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ background: 'var(--bg-base)', borderRadius: 14, padding: 20 }}>
-                <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Booking Summary
-                </h3>
-                {[
-                  ['Guest', form.name],
-                  ['Phone', form.phone],
-                  ['Email', form.email || '—'],
-                  ['Room', `Room ${room.roomNumber}`],
-                  ['Check-In', form.checkInDate],
-                  ['Check-Out', form.checkOutDate],
-                  ['Nights', nights.toString()],
-                  ['Rate/Night', `₹${Number(room.pricePerNight).toLocaleString('en-IN')}`],
-                  ['Payment Status', paymentLabels[form.paymentStatus]],
-                ].map(([k, v]) => (
-                  <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid var(--border)', fontSize: 14 }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>{k}</span>
-                    <span style={{ fontWeight: 600 }}>{v}</span>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div className="field" style={{ gridColumn: 'span 2' }}>
+                    <label className="label" style={{ fontSize: 12 }}>Guest Full Name *</label>
+                    <div style={{ position: 'relative' }}>
+                      <User size={13} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+                      <input className="input" placeholder="John Doe" value={form.name} onChange={e => update('name', e.target.value)} style={{ paddingLeft: 34, height: 38, fontSize: 13 }} required />
+                    </div>
                   </div>
-                ))}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0 0', fontSize: 17, fontWeight: 800 }}>
-                  <span>Total Amount</span>
-                  <span style={{ color: 'var(--accent)' }}>₹{roomAmount.toLocaleString('en-IN')}</span>
+
+                  <div className="field">
+                    <label className="label" style={{ fontSize: 12 }}>Phone *</label>
+                    <div style={{ position: 'relative' }}>
+                      <Phone size={13} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+                      <input className="input" placeholder="e.g. 9876543210" value={form.phone} onChange={e => update('phone', e.target.value)} style={{ paddingLeft: 34, height: 38, fontSize: 13 }} required />
+                    </div>
+                  </div>
+
+                  <div className="field">
+                    <label className="label" style={{ fontSize: 12 }}>Email</label>
+                    <div style={{ position: 'relative' }}>
+                      <Mail size={13} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+                      <input className="input" type="email" placeholder="guest@email.com" value={form.email} onChange={e => update('email', e.target.value)} style={{ paddingLeft: 34, height: 38, fontSize: 13 }} />
+                    </div>
+                  </div>
+
+                  <div className="field">
+                    <label className="label" style={{ fontSize: 12 }}>Check-In Date *</label>
+                    <div style={{ position: 'relative' }}>
+                      <Calendar size={13} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+                      <input className="input" type="date" value={form.checkInDate} min={today} onChange={e => update('checkInDate', e.target.value)} style={{ paddingLeft: 34, height: 38, fontSize: 13 }} required />
+                    </div>
+                  </div>
+
+                  <div className="field">
+                    <label className="label" style={{ fontSize: 12 }}>Check-Out Date *</label>
+                    <div style={{ position: 'relative' }}>
+                      <Calendar size={13} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+                      <input className="input" type="date" value={form.checkOutDate} min={form.checkInDate} onChange={e => update('checkOutDate', e.target.value)} style={{ paddingLeft: 34, height: 38, fontSize: 13 }} required />
+                    </div>
+                  </div>
+
+                  <div className="field" style={{ gridColumn: 'span 2' }}>
+                    <label className="label" style={{ fontSize: 12 }}>Payment Status</label>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {(['pending', 'partial', 'paid'] as const).map(s => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => update('paymentStatus', s)}
+                          style={{
+                            flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                            border: form.paymentStatus === s ? '2px solid var(--accent)' : '1.5px solid var(--border)',
+                            background: form.paymentStatus === s ? 'var(--accent-light)' : 'transparent',
+                            color: form.paymentStatus === s ? 'var(--accent-dark)' : 'var(--text-secondary)',
+                            cursor: 'pointer', transition: 'all 0.15s',
+                          }}
+                        >
+                          {paymentLabels[s]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {form.paymentStatus === 'partial' && (
+                    <div className="field" style={{ gridColumn: 'span 2' }}>
+                      <label className="label" style={{ fontSize: 12 }}>Advance Amount (₹)</label>
+                      <div style={{ position: 'relative' }}>
+                        <CreditCard size={13} color="var(--text-muted)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+                        <input className="input" type="number" placeholder="0" value={form.advanceAmount} onChange={e => update('advanceAmount', e.target.value)} style={{ paddingLeft: 34, height: 38, fontSize: 13 }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Summary bar */}
+                <div style={{
+                  background: 'var(--bg-base)', borderRadius: 10, padding: '10px 14px',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  marginTop: 6
+                }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                    {nights} night{nights !== 1 ? 's' : ''} · Room {room.roomNumber}
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent)' }}>
+                    ₹{roomAmount.toLocaleString('en-IN')}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                  <button className="btn btn-outline" onClick={onClose} style={{ flex: 1, height: 38, padding: '0 12px', justifyContent: 'center' }}>Cancel</button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                      if (!form.name || !form.phone || !form.checkInDate || !form.checkOutDate) {
+                        setError('Please fill all required fields');
+                        return;
+                      }
+                      const cleanPhone = form.phone.replace(/\D/g, '');
+                      if (cleanPhone.length !== 10) {
+                        setError('Phone number must be exactly 10 digits');
+                        return;
+                      }
+                      setStep('summary');
+                    }}
+                    style={{ flex: 2, height: 38, padding: '0 12px', justifyContent: 'center' }}
+                  >
+                    Review Booking →
+                  </button>
                 </div>
               </div>
+            )}
 
-              {error && (
-                <div style={{ background: '#fee2e2', borderRadius: 8, padding: '10px 14px', color: '#991b1b', fontSize: 13 }}>
-                  {error}
+            {/* STEP: Summary */}
+            {step === 'summary' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ background: 'var(--bg-base)', borderRadius: 14, padding: 20 }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Booking Summary
+                  </h3>
+                  {[
+                    ['Guest', form.name],
+                    ['Phone', form.phone],
+                    ['Email', form.email || '—'],
+                    ['Room', `Room ${room.roomNumber}`],
+                    ['Check-In', form.checkInDate],
+                    ['Check-Out', form.checkOutDate],
+                    ['Nights', nights.toString()],
+                    ['Rate/Night', `₹${Number(room.pricePerNight).toLocaleString('en-IN')}`],
+                    ['Payment Status', paymentLabels[form.paymentStatus]],
+                  ].map(([k, v]) => (
+                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid var(--border)', fontSize: 14 }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>{k}</span>
+                      <span style={{ fontWeight: 600 }}>{v}</span>
+                    </div>
+                  ))}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0 0', fontSize: 17, fontWeight: 800 }}>
+                    <span>Total Amount</span>
+                    <span style={{ color: 'var(--accent)' }}>₹{roomAmount.toLocaleString('en-IN')}</span>
+                  </div>
                 </div>
-              )}
 
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button className="btn btn-outline" onClick={() => setStep('details')} style={{ flex: 1 }}>← Edit</button>
-                <button
-                  className="btn btn-success"
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  style={{ flex: 2, justifyContent: 'center' }}
-                >
-                  {loading ? <><Loader size={15} style={{ animation: 'spin 1s linear infinite' }} /> Processing...</> : '✅ Confirm Booking'}
+                {error && (
+                  <div style={{ background: '#fee2e2', borderRadius: 8, padding: '10px 14px', color: '#991b1b', fontSize: 13 }}>
+                    {error}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button className="btn btn-outline" onClick={() => setStep('details')} style={{ flex: 1 }}>← Edit</button>
+                  <button
+                    className="btn btn-success"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    style={{ flex: 2, justifyContent: 'center' }}
+                  >
+                    {loading ? <><Loader size={15} style={{ animation: 'spin 1s linear infinite' }} /> Processing...</> : '✅ Confirm Booking'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP: Done */}
+            {step === 'done' && created && (
+              <div style={{ textAlign: 'center', padding: '12px 0' }}>
+                <CheckCircle size={56} color="var(--success)" style={{ margin: '0 auto 16px' }} />
+                <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Booking Confirmed!</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 20 }}>
+                  Room {room.roomNumber} has been booked for {form.name}.
+                </p>
+                <div style={{
+                  background: 'var(--bg-base)', borderRadius: 12, padding: '14px 20px', marginBottom: 20,
+                  border: '1.5px dashed var(--border)',
+                }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Booking ID</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'monospace', wordBreak: 'break-all' }}>{created.id}</div>
+                </div>
+                <div style={{
+                  background: 'var(--success-light)', borderRadius: 12, padding: '14px 20px', marginBottom: 24,
+                  fontSize: 13, color: '#065f46',
+                }}>
+                  📱 Guest link will be shared via WhatsApp/Email automatically.
+                </div>
+                <button className="btn btn-primary" onClick={() => { onSuccess(); onClose(); }} style={{ width: '100%', justifyContent: 'center' }}>
+                  Done
                 </button>
               </div>
-            </div>
-          )}
-
-          {/* STEP: Done */}
-          {step === 'done' && created && (
-            <div style={{ textAlign: 'center', padding: '12px 0' }}>
-              <CheckCircle size={56} color="var(--success)" style={{ margin: '0 auto 16px' }} />
-              <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Booking Confirmed!</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 20 }}>
-                Room {room.roomNumber} has been booked for {form.name}.
-              </p>
-              <div style={{
-                background: 'var(--bg-base)', borderRadius: 12, padding: '14px 20px', marginBottom: 20,
-                border: '1.5px dashed var(--border)',
-              }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Booking ID</div>
-                <div style={{ fontSize: 13, fontWeight: 700, fontFamily: 'monospace', wordBreak: 'break-all' }}>{created.id}</div>
-              </div>
-              <div style={{
-                background: 'var(--success-light)', borderRadius: 12, padding: '14px 20px', marginBottom: 24,
-                fontSize: 13, color: '#065f46',
-              }}>
-                📱 Guest link will be shared via WhatsApp/Email automatically.
-              </div>
-              <button className="btn btn-primary" onClick={() => { onSuccess(); onClose(); }} style={{ width: '100%', justifyContent: 'center' }}>
-                Done
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 }

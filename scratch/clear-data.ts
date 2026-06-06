@@ -6,10 +6,7 @@ import { Pool } from 'pg';
 import { bookings, orders, orderItems, payments, rooms } from '../src/db/schema';
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  connectionString: process.env.DATABASE_URL
 });
 const db = drizzle(pool);
 

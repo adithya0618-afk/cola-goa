@@ -45,11 +45,11 @@ html, body {
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: none; }
 }
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(-12px); }
-  to   { opacity: 1; transform: translateX(0); }
+  to   { opacity: 1; transform: none; }
 }
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
@@ -129,7 +129,7 @@ html, body {
 .overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
-  z-index: 50; display: flex; align-items: center;
+  z-index: 99999; display: flex; align-items: center;
   justify-content: center; padding: 16px;
 }
 .modal {
@@ -153,13 +153,13 @@ html, body {
   background: var(--sidebar-bg);
   display: flex; flex-direction: column;
   height: 100vh; flex-shrink: 0;
-  position: relative; z-index: 40;
+  position: relative; z-index: 0;
   transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
 }
 
 .sidebar-overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.5); z-index: 39;
+  background: rgba(0,0,0,0.5); z-index: 9998;
   cursor: pointer;
 }
 
@@ -201,10 +201,10 @@ html, body {
 @media (max-width: 1024px) {
   .admin-sidebar {
     position: fixed; left: 0; top: 0;
-    transform: translateX(-100%); z-index: 40;
+    transform: translateX(-100%); z-index: 9999;
   }
   .admin-sidebar.open { transform: translateX(0); }
-  .sidebar-overlay.open { display: block; }
+  .sidebar-overlay.open { display: block; z-index: 9998; }
   .admin-main { padding: 20px; }
   .topbar-search { display: none; }
 }
@@ -218,10 +218,9 @@ html, body {
   .filter-row { flex-direction: column; align-items: stretch; }
   .filter-pills { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
   .modal { border-radius: 16px; }
-  .overlay { align-items: flex-end; padding: 0; }
+  .overlay { align-items: center; padding: 16px; }
   .overlay .modal {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    border-radius: 20px;
     max-height: 95vh;
   }
   .dashboard-bottom { grid-template-columns: 1fr !important; }

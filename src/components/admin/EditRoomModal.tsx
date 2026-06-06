@@ -5,6 +5,7 @@ import { X, CheckCircle2, User, Download, LogOut, Phone, Mail } from 'lucide-rea
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { numberToWords, RESORT_DETAILS } from '@/lib/invoiceUtils';
+import Portal from './Portal';
 
 // Define specific types to replace any
 interface Room {
@@ -111,6 +112,11 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
   };
 
   const handleUpdateGuest = async () => {
+    const cleanPhone = guestPhone.replace(/\D/g, '');
+    if (cleanPhone.length !== 10) {
+      alert('Phone number must be exactly 10 digits');
+      return;
+    }
     setSaving(true);
     try {
       await fetch(`/api/admin/rooms/${room.id}`, {
@@ -330,8 +336,9 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
   };
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <div className="modal animate-fade-in" style={{ maxWidth: 640 }} onClick={e => e.stopPropagation()}>
+    <Portal>
+      <div className="overlay" onClick={onClose}>
+        <div className="modal animate-fade-in" style={{ maxWidth: 640 }} onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div style={{
           padding: '22px 28px', borderBottom: '1px solid var(--border)',
@@ -434,15 +441,16 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
                         value={checkOutDate} 
                         onChange={e => setCheckOutDate(e.target.value)} 
                       />
-                      <div className="field">
-                        <label className="label">Payment Status</label>
-                        <select className="input" value={paymentStatus} onChange={e => setPaymentStatus(e.target.value)}>
-                          <option value="">Select status</option>
-                          <option value="paid">Paid</option>
-                          <option value="unpaid">Unpaid</option>
-                          <option value="partial">Partial</option>
-                        </select>
-                      </div>
+                    </div>
+
+                    <div className="field">
+                      <label className="label">Payment Status</label>
+                      <select className="input" value={paymentStatus} onChange={e => setPaymentStatus(e.target.value)}>
+                        <option value="">Select status</option>
+                        <option value="paid">Paid</option>
+                        <option value="unpaid">Unpaid</option>
+                        <option value="partial">Partial</option>
+                      </select>
                     </div>
                   </div>
 
@@ -545,5 +553,7 @@ export default function EditRoomModal({ room, onClose, onSuccess }: EditRoomModa
         </div>
       </div>
     </div>
-  );
+  </Portal>
+);
 }
+
