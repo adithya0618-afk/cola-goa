@@ -208,6 +208,7 @@ export default function BookingModal({ room, onClose, onSuccess }: BookingModalP
                         setError('Phone number must be exactly 10 digits');
                         return;
                       }
+                      setError('');
                       setStep('summary');
                     }}
                     style={{ flex: 2, height: 38, padding: '0 12px', justifyContent: 'center' }}
@@ -254,7 +255,7 @@ export default function BookingModal({ room, onClose, onSuccess }: BookingModalP
                 )}
 
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <button className="btn btn-outline" onClick={() => setStep('details')} style={{ flex: 1 }}>← Edit</button>
+                  <button className="btn btn-outline" onClick={() => { setError(''); setStep('details'); }} style={{ flex: 1 }}>← Edit</button>
                   <button
                     className="btn btn-success"
                     onClick={handleSubmit}
