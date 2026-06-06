@@ -191,7 +191,21 @@ html, body {
   display: flex; gap: 12px;
   margin-bottom: 20px; flex-wrap: wrap; align-items: center;
 }
-.filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-pills {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filter-pills::-webkit-scrollbar {
+  display: none;
+}
+.filter-pills button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
 
 /* ===========================
    RESPONSIVE BREAKPOINTS

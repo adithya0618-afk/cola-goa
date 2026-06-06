@@ -149,7 +149,7 @@ export default function RevenuePage() {
             Track income from rooms, food orders, and manage expenses
           </p>
         </div>
-        <button className="btn btn-primary" onClick={openAdd} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <button className="btn btn-primary" onClick={openAdd} style={{ display: 'flex', alignItems: 'center', gap: 8 }} suppressHydrationWarning>
           <Plus size={16} /> Add Expense
         </button>
       </div>
@@ -336,11 +336,11 @@ export default function RevenuePage() {
                       <td>
                         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                           <button className="btn btn-outline btn-sm" onClick={() => openEdit(exp)}
-                            style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            style={{ display: 'flex', alignItems: 'center', gap: 4 }} suppressHydrationWarning>
                             <Pencil size={13} /> Edit
                           </button>
                           <button className="btn btn-sm" onClick={() => handleDelete(exp.id)}
-                            style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}>
+                            style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }} suppressHydrationWarning>
                             <Trash2 size={13} /> Delete
                           </button>
                         </div>
@@ -359,7 +359,7 @@ export default function RevenuePage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div className="card" style={{ width: '100%', maxWidth: 440, padding: 28, position: 'relative' }}>
             <button onClick={() => setShowModal(false)}
-              style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+              style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }} suppressHydrationWarning>
               <X size={20} />
             </button>
             <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20 }}>
@@ -369,21 +369,21 @@ export default function RevenuePage() {
               <div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>Amount (₹) *</label>
                 <input className="input" type="number" placeholder="e.g. 5000" value={form.amount}
-                  onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} required min="0" step="0.01" />
+                  onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} required min="0" step="0.01" suppressHydrationWarning />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>Description</label>
                 <input className="input" type="text" placeholder="e.g. Electricity bill" value={form.description}
-                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))} suppressHydrationWarning />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>Date *</label>
                 <input className="input" type="date" value={form.date}
-                  onChange={e => setForm(f => ({ ...f, date: e.target.value }))} required />
+                  onChange={e => setForm(f => ({ ...f, date: e.target.value }))} required suppressHydrationWarning />
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-                <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={saving}>
+                <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowModal(false)} suppressHydrationWarning>Cancel</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={saving} suppressHydrationWarning>
                   {saving ? 'Saving...' : editExpense ? 'Update' : 'Add Expense'}
                 </button>
               </div>

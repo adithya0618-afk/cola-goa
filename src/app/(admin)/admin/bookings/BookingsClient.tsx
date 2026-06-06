@@ -93,7 +93,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
           </p>
         </div>
         <a href="/admin/rooms">
-          <button className="btn btn-primary">+ New Booking</button>
+          <button className="btn btn-primary" suppressHydrationWarning>+ New Booking</button>
         </a>
       </div>
 
@@ -107,6 +107,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ paddingLeft: 34 }}
+            suppressHydrationWarning
           />
         </div>
         <div className="filter-pills">
@@ -187,6 +188,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
                         className="btn btn-success btn-sm"
                         disabled={updating === b.id}
                         onClick={() => updateStatus(b.id, 'checked_in')}
+                        suppressHydrationWarning
                       >
                         <CheckCircle size={13} /> Check-In
                       </button>
@@ -196,13 +198,14 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
                         className="btn btn-primary btn-sm"
                         disabled={updating === b.id}
                         onClick={() => handleCheckout(b)}
+                        suppressHydrationWarning
                       >
                         <LogOut size={13} /> Checkout
                       </button>
                     )}
                     {b.guestToken && (
                       <a href={`/guest/${b.guestToken}`} target="_blank" rel="noreferrer">
-                        <button className="btn btn-outline btn-sm"><ExternalLink size={12} /> Guest Link</button>
+                        <button className="btn btn-outline btn-sm" suppressHydrationWarning><ExternalLink size={12} /> Guest Link</button>
                       </a>
                     )}
                     {(b.status === 'booked') && (
@@ -211,6 +214,7 @@ export default function BookingsClient({ bookings, rooms }: { bookings: Booking[
                         disabled={updating === b.id}
                         onClick={() => setCancelBooking(b)}
                         style={{ background: '#fee2e2', color: '#991b1b', border: 'none' }}
+                        suppressHydrationWarning
                       >
                         <X size={12} /> Cancel
                       </button>
